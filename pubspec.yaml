@@ -1,0 +1,48 @@
+name: sansu_kore
+description: "算数コレ！- たし算からかんすうまで"
+publish_to: 'none'
+
+version: 2.0.0+2
+
+environment:
+  sdk: ^3.11.5
+
+dependencies:
+  flutter:
+    sdk: flutter
+  shared_core:
+    path: ../shared_core
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^2.6.1
+  shared_preferences: ^2.3.0
+  intl: ^0.19.0
+  confetti: ^0.8.0
+  firebase_core: ^3.13.1
+  firebase_auth: ^5.5.4
+  firebase_messaging: ^15.1.6
+  in_app_purchase: ^3.2.0
+  google_fonts: ^6.2.1
+  uuid: ^4.0.0
+  google_mobile_ads: ^5.2.0
+  share_plus: ^10.1.4
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.14.1
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/icons/app_icon.png"
+  min_sdk_android: 21
+  adaptive_icon_background: "#E74C3C"
+  adaptive_icon_foreground: "assets/icons/app_icon.png"
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/icons/
+    - assets/legal/
