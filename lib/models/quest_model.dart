@@ -1,3 +1,5 @@
+import 'dart:math';
+
 enum MathTopicType { addition, subtraction, multiplication, division, fraction, decimal, geometry, word }
 
 class QuizQuestion {

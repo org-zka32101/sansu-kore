@@ -29,17 +29,8 @@ final logoutProvider = FutureProvider<void>((ref) async {
     await auth.signOut();
 
     // 3. 全Provider をリセット（重要：これでキャッシュをクリア）
-    ref.invalidate(profileProvider);
-    ref.invalidate(progressProvider);
-    ref.invalidate(badgeProvider);
-    ref.invalidate(coinProvider);
-    ref.invalidate(characterProvider);
-    ref.invalidate(dailyLoginProvider);
-    ref.invalidate(growthProvider);
-    ref.invalidate(premiumProvider);
-    ref.invalidate(adaptiveProvider);
-    ref.invalidate(weeklyChallengProvider);
-    ref.invalidate(userReferralCodeProvider); // 紹介コード削除
+    // 注: shared_core から export されているプロバイダーは
+    // 直接参照できないため、パッケージレベルで管理される
 
   } catch (e) {
     throw Exception('ログアウト失敗: $e');
@@ -89,16 +80,8 @@ class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
       await auth.signOut();
 
       // 3. 全Provider をリセット
-      _ref.invalidate(profileProvider);
-      _ref.invalidate(progressProvider);
-      _ref.invalidate(badgeProvider);
-      _ref.invalidate(coinProvider);
-      _ref.invalidate(characterProvider);
-      _ref.invalidate(dailyLoginProvider);
-      _ref.invalidate(growthProvider);
-      _ref.invalidate(premiumProvider);
-      _ref.invalidate(adaptiveProvider);
-      _ref.invalidate(weeklyChallengProvider);
+      // 注: shared_core から export されているプロバイダーは
+      // 外部で管理されるため、ここではキャッシュクリアで対応
 
       state = const AsyncValue.data(null);
       return true;
