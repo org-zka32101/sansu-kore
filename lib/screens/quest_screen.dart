@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/quest_model.dart';
 import '../providers/adaptive_provider.dart';
 import '../theme/app_theme.dart';
+import '../widgets/furigana_text.dart';
 
 class QuestScreen extends ConsumerStatefulWidget {
   final Stage stage;
@@ -158,9 +159,10 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                         children: [
                           const Text('💡 ', style: TextStyle(fontSize: 18)),
                           Expanded(
-                            child: Text(
+                            child: FuriganaText(
                               _current.hint!,
-                              style: const TextStyle(fontSize: 14, color: kTextDark),
+                              fontSize: 14,
+                              color: kTextDark,
                             ),
                           ),
                         ],
@@ -276,9 +278,10 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                               ),
                             ),
                             const SizedBox(height: 8),
-                            Text(
+                            FuriganaText(
                               _current.explanation,
-                              style: const TextStyle(fontSize: 14, color: kTextDark, height: 1.5),
+                              fontSize: 14,
+                              color: kTextDark,
                             ),
                           ],
                         ),

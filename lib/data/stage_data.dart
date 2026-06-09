@@ -54,7 +54,7 @@ const _grade1Stages = [
         choices: ['1', '2', '3', '4'],
         correctIndex: 1,
         explanation: '1 + 1 = 2 だよ！いち たす いち は に！',
-        hint: '指を1本と1本出してみよう',
+        hint: '{指|ゆび}を1{本|ほん}と1{本|ほん}{出|だ}してみよう',
       ),
       QuizQuestion(
         id: 'g1s1q2', type: MathTopicType.addition, grade: 1,
@@ -62,7 +62,7 @@ const _grade1Stages = [
         choices: ['4', '5', '6', '7'],
         correctIndex: 1,
         explanation: '2 + 3 = 5 だよ！に たす さん は ご！',
-        hint: '指を2本と3本出してみよう',
+        hint: '{指|ゆび}を2{本|ほん}と3{本|ほん}{出|だ}してみよう',
       ),
       QuizQuestion(
         id: 'g1s1q3', type: MathTopicType.addition, grade: 1,
@@ -230,7 +230,7 @@ const _grade1Stages = [
         choices: ['7', '8', '9', '10'],
         correctIndex: 2,
         explanation: '11 - 2 = 9 だよ！10から2をひくと8、1を足して9！',
-        hint: '11は10と1。まず10から2を引いてみよう',
+        hint: '11は10と1。まず10から2を{引|ひ}いてみよう',
       ),
       QuizQuestion(
         id: 'g1s5q2', type: MathTopicType.subtraction, grade: 1,
@@ -238,7 +238,7 @@ const _grade1Stages = [
         choices: ['6', '7', '8', '9'],
         correctIndex: 2,
         explanation: '13 - 5 = 8 だよ！10から5を引くと5、3を足して8！',
-        hint: '13は10と3。10から先に5を引こう',
+        hint: '13は10と3。10から{先|さき}に5を{引|ひ}こう',
       ),
       QuizQuestion(
         id: 'g1s5q3', type: MathTopicType.subtraction, grade: 1,
@@ -253,7 +253,7 @@ const _grade1Stages = [
         choices: ['3', '4', '5', '6'],
         correctIndex: 2,
         explanation: '12 - 7 = 5 だよ！10から7を引くと3、2を足して5！',
-        hint: '10から7を引いてから、残りの2を足そう',
+        hint: '10から7を{引|ひ}いてから、{残|のこ}りの2を{足|た}そう',
       ),
       QuizQuestion(
         id: 'g1s5q5', type: MathTopicType.subtraction, grade: 1,
@@ -275,7 +275,7 @@ const _grade1Stages = [
         choices: ['3こ', '4こ', '5こ', '6こ'],
         correctIndex: 2,
         explanation: '13 - 8 = 5こ だよ！10から8を引いて2、3を足して5！',
-        hint: '13 - 8 を計算しよう',
+        hint: '13 - 8 を{計算|けいさん}しよう',
       ),
       QuizQuestion(
         id: 'g1s5q8', type: MathTopicType.subtraction, grade: 1,
@@ -298,7 +298,7 @@ const _grade1Stages = [
         choices: ['40', '50', '60', '70'],
         correctIndex: 1,
         explanation: '10のたばが5つで50だよ！10、20、30、40、50と数えよう！',
-        hint: '10ずつ数えてみよう',
+        hint: '10ずつ{数|かぞ}えてみよう',
       ),
       QuizQuestion(
         id: 'g1s6q2', type: MathTopicType.addition, grade: 1,
@@ -306,7 +306,7 @@ const _grade1Stages = [
         choices: ['40と6', '40と7', '40と8', '50と7'],
         correctIndex: 1,
         explanation: '47は40と7をあわせた数だよ！十の位が4→40、一の位が7！',
-        hint: '十の位と一の位に分けよう',
+        hint: '{十|じゅう}の{位|くらい}と{一|いち}の{位|くらい}に{分|わ}けよう',
       ),
       QuizQuestion(
         id: 'g1s6q3', type: MathTopicType.addition, grade: 1,
@@ -328,7 +328,7 @@ const _grade1Stages = [
         choices: ['58', '63', '57', '60'],
         correctIndex: 1,
         explanation: '63が一番大きいよ！十の位が6 > 5 だから63と60が大きい。63 > 60！',
-        hint: '十の位の数を比べよう',
+        hint: '{十|じゅう}の{位|くらい}の{数|かず}を{比|くら}べよう',
       ),
       QuizQuestion(
         id: 'g1s6q6', type: MathTopicType.addition, grade: 1,
@@ -343,7 +343,7 @@ const _grade1Stages = [
         choices: ['90', '100', '101', '110'],
         correctIndex: 1,
         explanation: '99のつぎは100だよ！100はひゃく！',
-        hint: '1ずつ大きくなるよ',
+        hint: '1ずつ{大|おお}きくなるよ',
       ),
       QuizQuestion(
         id: 'g1s6q8', type: MathTopicType.addition, grade: 1,
@@ -366,7 +366,7 @@ const _grade1Stages = [
         choices: ['1じ', '2じ', '3じ', '12じ'],
         correctIndex: 1,
         explanation: 'みじかいはりが2→2じだよ！ながいはりが12のときはちょうどの時刻！',
-        hint: 'みじかいはり（時針）が時刻を教えてくれる',
+        hint: 'みじかいはり（{時針|じしん}）が{時刻|じこく}を{教|おし}えてくれる',
       ),
       QuizQuestion(
         id: 'g1s7q2', type: MathTopicType.word, grade: 1,
@@ -374,7 +374,7 @@ const _grade1Stages = [
         choices: ['3', '6', '9', '12'],
         correctIndex: 1,
         explanation: 'はんのときながいはりは6を指すよ！「はん」= 30分 = 6の位置！',
-        hint: '「はん」は6を指すよ',
+        hint: '「はん」は6を{指|さ}すよ',
       ),
       QuizQuestion(
         id: 'g1s7q3', type: MathTopicType.word, grade: 1,
@@ -435,7 +435,7 @@ const _grade1Stages = [
         choices: ['しかくけい', 'さんかくけい', 'えん', 'ごかっけい'],
         correctIndex: 1,
         explanation: '3つのかどがある形は「さんかくけい」だよ！さん=3！',
-        hint: 'さん=3、かど=角',
+        hint: 'さん=3、かど={角|かど}',
       ),
       QuizQuestion(
         id: 'g1s8q2', type: MathTopicType.geometry, grade: 1,
@@ -443,7 +443,7 @@ const _grade1Stages = [
         choices: ['さんかくけい', 'しかくけい', 'えん', 'ひしがた'],
         correctIndex: 2,
         explanation: '丸い形は「えん」だよ！コインやボタンの形！',
-        hint: 'かどがなく、まるい形',
+        hint: 'かどがなく、まるい{形|かたち}',
       ),
       QuizQuestion(
         id: 'g1s8q3', type: MathTopicType.geometry, grade: 1,
@@ -473,7 +473,7 @@ const _grade1Stages = [
         choices: ['さんかくけい', 'えん', 'きゅう（たま）', 'しかくけい'],
         correctIndex: 2,
         explanation: 'ボールの形は「きゅう」だよ！どこから見ても丸い立体！',
-        hint: '立体の丸い形',
+        hint: '{立体|りったい}の{丸|まる}い{形|かたち}',
       ),
       QuizQuestion(
         id: 'g1s8q7', type: MathTopicType.geometry, grade: 1,
