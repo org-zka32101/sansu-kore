@@ -5,6 +5,7 @@ import '../providers/progress_provider.dart';
 import '../providers/premium_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
+import '../providers/logout_provider.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -143,11 +144,18 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: '進捗・コインが全て削除されます',
               onTap: () => _showResetDialog(context, ref),
             ),
+            const SizedBox(height: 8),
+            _SettingCard(
+              emoji: '🚪',
+              title: 'ログアウト',
+              subtitle: '別のプロフィールに切り替える',
+              onTap: () => _showLogoutDialog(context, ref),
+            ),
 
             const SizedBox(height: 24),
             const Center(
               child: Text(
-                '算数コレ！ v1.0.0',
+                '算数コレ！ v2.0.0',
                 style: TextStyle(color: kTextMuted, fontSize: 12),
               ),
             ),
@@ -172,6 +180,62 @@ class SettingsScreen extends ConsumerWidget {
               if (ctx.mounted) Navigator.pop(ctx);
             },
             child: const Text('リセット'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showLogoutDialog(BuildContext context, WidgetRef ref) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('ログアウトしますか？'),
+        content: const Text(
+          '現在のプロフィールからログアウトします。\n\n'
+          'すべてのデータ（学習履歴・コイン・バッジ等）は保持されます。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('キャンセル'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              // ログアウト処理を実行
+              final notifier = ref.read(logoutWithUIProvider.notifier);
+              final success = await notifier.logout();
+
+              if (success && ctx.mounted) {
+                // ログアウト成功 → ログイン画面へ
+                Navigator.pop(ctx); // ダイアログを閉じる
+                Navigator.of(context).pushNamedAndRemoveUntil(
+                  '/splash', // またはログイン画面のルート
+                  (route) => false,
+                );
+
+                // スナックバー表示
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('ログアウトしました'),
+                    backgroundColor: Color(0xFF27AE60),
+                  ),
+                );
+              } else if (ctx.mounted) {
+                Navigator.pop(ctx);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('ログアウトに失敗しました'),
+                    backgroundColor: Colors.red,
+                  ),
+                );
+              }
+            },
+            child: const Text(
+              'ログアウト',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ],
       ),
