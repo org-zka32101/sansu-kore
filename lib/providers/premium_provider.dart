@@ -9,7 +9,7 @@ const _trialDays = 14;
 
 const kProductIdMonthly = 'sansu_kore_monthly_300';
 const kProductIdYearly = 'sansu_kore_yearly_2400';
-const kFreeStageLimit = 3;
+const kFreeStageLimit = 5;
 
 class PremiumState {
   final bool isPremium;

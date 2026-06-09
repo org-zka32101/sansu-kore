@@ -123,7 +123,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               progress: progress,
               badgeCount: badges.earnedBadges.length,
               coinCount: coins.totalCoins,
-              loginStreak: daily.loginStreak,
             ),
           ),
 
@@ -179,17 +178,17 @@ class _StatsRow extends StatelessWidget {
   final LearningProgress progress;
   final int badgeCount;
   final int coinCount;
-  final int loginStreak;
 
   const _StatsRow({
     required this.progress,
     required this.badgeCount,
     required this.coinCount,
-    required this.loginStreak,
   });
 
   @override
   Widget build(BuildContext context) {
+    final totalStages = getAllStages().length;
+    final cleared = progress.clearedStageIds.length;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
       child: Row(
@@ -198,7 +197,7 @@ class _StatsRow extends StatelessWidget {
           const SizedBox(width: 10),
           _StatCard(label: 'コイン', value: '$coinCount枚', emoji: '🪙', color: const Color(0xFFFFB81C)),
           const SizedBox(width: 10),
-          _StatCard(label: 'ログイン', value: '${loginStreak}日連続', emoji: '📅', color: kAccentGreen),
+          _StatCard(label: 'クリア', value: '$cleared/$totalStages', emoji: '🎯', color: kAccentGreen),
         ],
       ),
     );
