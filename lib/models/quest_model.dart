@@ -20,6 +20,59 @@ class QuizQuestion {
     required this.explanation,
     this.hint,
   });
+
+  /// 選択肢をランダムに並べ替える
+  /// 毎回異なる順序で表示されるため、ユーザーが正解位置を覚えるのを防ぐ
+  ///
+  /// 返り値: ランダム化された新しい QuizQuestion インスタンス
+  QuizQuestion randomizeChoices() {
+    // 選択肢の元の順序を保持（correctIndexの位置を追跡するため）
+    final originalChoices = [...choices];
+    final correctAnswer = originalChoices[correctIndex];
+
+    // 選択肢をシャッフル
+    final shuffledChoices = [...originalChoices];
+    _shuffle(shuffledChoices);
+
+    // 新しい correctIndex を計算
+    final newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
+
+    // 新しい QuizQuestion を返す
+    return QuizQuestion(
+      id: id,
+      type: type,
+      grade: grade,
+      question: question,
+      choices: shuffledChoices,
+      correctIndex: newCorrectIndex,
+      explanation: explanation,
+      hint: hint,
+    );
+  }
+
+  /// リスト要素をシャッフル（Fisher-Yates アルゴリズム）
+  /// 問題が多すぎる場合は、複数ユーザーで同じ順序になるのを防ぐため
+  /// ソルトを追加することも検討
+  static void _shuffle<T>(List<T> list) {
+    final random = _getRandomInstance();
+    for (int i = list.length - 1; i > 0; i--) {
+      final j = random.nextInt(i + 1);
+      // swap
+      final temp = list[i];
+      list[i] = list[j];
+      list[j] = temp;
+    }
+  }
+
+  /// ランダム インスタンス取得（テスト時は seed 指定可能）
+  static Random? _testRandom;
+  static Random _getRandomInstance() => _testRandom ?? Random();
+
+  /// テスト用：ランダムのシードを固定
+  @visibleForTesting
+  static void setTestRandom(Random? random) {
+    _testRandom = random;
+  }
 }
 
 class Stage {

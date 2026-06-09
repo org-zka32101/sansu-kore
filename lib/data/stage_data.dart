@@ -1,15 +1,35 @@
 import '../models/quest_model.dart';
 
 List<Stage> getStagesForGrade(int grade) {
-  switch (grade) {
-    case 1: return _grade1Stages;
-    case 2: return _grade2Stages;
-    case 3: return _grade3Stages;
-    case 4: return _grade4Stages;
-    case 5: return _grade5Stages;
-    case 6: return _grade6Stages;
-    default: return [];
-  }
+  final stages = switch (grade) {
+    1 => _grade1Stages,
+    2 => _grade2Stages,
+    3 => _grade3Stages,
+    4 => _grade4Stages,
+    5 => _grade5Stages,
+    6 => _grade6Stages,
+    _ => <Stage>[],
+  };
+
+  // すべての問題の選択肢をランダム化
+  // これにより、ユーザーが正解の位置を覚えるのを防ぐ
+  return _randomizeStages(stages);
+}
+
+/// ステージ内のすべての問題の選択肢をランダム化
+List<Stage> _randomizeStages(List<Stage> stages) {
+  return stages.map((stage) {
+    final randomizedQuestions = stage.questions
+        .map((q) => q.randomizeChoices())
+        .toList();
+    return Stage(
+      stageNumber: stage.stageNumber,
+      title: stage.title,
+      grade: stage.grade,
+      topicType: stage.topicType,
+      questions: randomizedQuestions,
+    );
+  }).toList();
 }
 
 List<Stage> getAllStages() {
