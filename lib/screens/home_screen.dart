@@ -9,6 +9,7 @@ import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/weekly_challenge_provider.dart';
 import '../screens/daily_bonus_screen.dart';
+import '../screens/math_guide_screen.dart';
 import '../theme/app_theme.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
@@ -129,6 +130,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // ウィークリーチャレンジカード
           SliverToBoxAdapter(
             child: _WeeklyChallengeCard(),
+          ),
+
+          // 算数ガイドセクション
+          SliverToBoxAdapter(
+            child: _MathGuideSection(
+              onTap: () => Navigator.of(context).pushNamed('/math-guide'),
+            ),
           ),
 
           // AI推奨（アダプティブラーニング）
@@ -445,6 +453,83 @@ class _RecentBadgesSection extends StatelessWidget {
             )).toList(),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// 算数ガイドセクション
+class _MathGuideSection extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _MathGuideSection({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [
+              const Color(0xFF667EEA).withValues(alpha: 0.1),
+              const Color(0xFF764BA2).withValues(alpha: 0.1),
+            ],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: const Color(0xFF667EEA).withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+        child: Row(
+          children: [
+            // アイコン
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFF667EEA).withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Text('?', style: TextStyle(fontSize: 28)),
+            ),
+            const SizedBox(width: 16),
+            // テキスト
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '算数ガイド',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'たし算のやり方、かけ算の仕組みなど',
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            // 矢印
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Color(0xFF667EEA),
+              size: 18,
+            ),
+          ],
+        ),
       ),
     );
   }

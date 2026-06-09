@@ -14,6 +14,7 @@ import 'screens/weekly_challenge_screen.dart';
 import 'screens/growth_screen.dart';
 import 'screens/invite_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/math_guide_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/profile_selection_screen.dart';
@@ -75,6 +76,7 @@ class SansuKoreApp extends ConsumerWidget {
         '/weekly-challenge': (context) => const WeeklyChallengeScreen(),
         '/growth': (context) => const GrowthScreen(),
         '/invite': (context) => const InviteScreen(),
+        '/math-guide': (context) => const MathGuideScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/quest') {
