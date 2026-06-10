@@ -2,7 +2,7 @@ name: sansu_kore
 description: "算数コレ！- たし算からかんすうまで"
 publish_to: 'none'
 
-version: 2.2.0+4
+version: 2.2.0+5
 
 environment:
   sdk: ^3.11.5
