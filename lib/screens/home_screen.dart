@@ -8,6 +8,7 @@ import '../providers/profile_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/weekly_challenge_provider.dart';
+import '../models/quest_model.dart';
 import '../screens/daily_bonus_screen.dart';
 import '../screens/math_guide_screen.dart';
 import '../theme/app_theme.dart';
@@ -135,6 +136,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           SliverToBoxAdapter(
             child: _MathGuideSection(
               onTap: () => Navigator.of(context).pushNamed('/math-guide'),
+            ),
+          ),
+
+          // スペシャルモード（無限とっくん・ゴーストバトル）
+          SliverToBoxAdapter(
+            child: _SpecialModeSection(
+              weakestTopic: adaptive.weakestTopic,
+              onInfinite: (topic) => Navigator.of(context)
+                  .pushNamed('/infinite-practice', arguments: topic),
+              onGhost: () => Navigator.of(context).pushNamed('/stages'),
             ),
           ),
 
@@ -450,6 +461,136 @@ class _RecentBadgesSection extends StatelessWidget {
                 ),
               ),
             )).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── スペシャルモードセクション（無限とっくん + ゴーストバトル）─────
+class _SpecialModeSection extends StatelessWidget {
+  final MathTopicType? weakestTopic;
+  final void Function(MathTopicType?) onInfinite;
+  final VoidCallback onGhost;
+
+  const _SpecialModeSection({
+    required this.weakestTopic,
+    required this.onInfinite,
+    required this.onGhost,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Padding(
+            padding: EdgeInsets.only(bottom: 10),
+            child: Text(
+              '🎮 スペシャル練習',
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.bold,
+                  color: kTextDark),
+            ),
+          ),
+          Row(
+            children: [
+              // 無限とっくん
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onInfinite(weakestTopic),
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF43B89C), Color(0xFF2980B9)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                            color:
+                                const Color(0xFF43B89C).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3))
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text('∞', style: TextStyle(fontSize: 28, color: Colors.white)),
+                        const SizedBox(height: 6),
+                        const Text(
+                          '無限とっくん',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          weakestTopic != null
+                              ? '苦手を集中練習！'
+                              : '問題を無限生成',
+                          style: const TextStyle(
+                              fontSize: 10, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // ゴーストバトル
+              Expanded(
+                child: GestureDetector(
+                  onTap: onGhost,
+                  child: Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [Color(0xFF8E44AD), Color(0xFFE74C3C)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                            color:
+                                const Color(0xFF8E44AD).withValues(alpha: 0.35),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3))
+                      ],
+                    ),
+                    child: const Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('👻', style: TextStyle(fontSize: 28)),
+                        SizedBox(height: 6),
+                        Text(
+                          'ゴーストバトル',
+                          style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white),
+                        ),
+                        SizedBox(height: 2),
+                        Text(
+                          '前回の自分に挑め！',
+                          style: TextStyle(
+                              fontSize: 10, color: Colors.white70),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),

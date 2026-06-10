@@ -23,6 +23,7 @@ import 'screens/result_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/stage_select_screen.dart';
+import 'screens/infinite_practice_screen.dart';
 import 'screens/upgrade_screen.dart';
 import 'theme/app_theme.dart';
 
@@ -93,6 +94,13 @@ class SansuKoreApp extends ConsumerWidget {
               result: args['result'] as QuestResult,
               stage: args['stage'] as Stage,
             ),
+            settings: settings,
+          );
+        }
+        if (settings.name == '/infinite-practice') {
+          final topic = settings.arguments as MathTopicType?;
+          return MaterialPageRoute(
+            builder: (_) => InfinitePracticeScreen(initialTopic: topic),
             settings: settings,
           );
         }

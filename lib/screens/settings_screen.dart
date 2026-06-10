@@ -6,6 +6,7 @@ import '../providers/premium_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/logout_provider.dart';
+import '../providers/sansu_profile_provider.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -17,6 +18,7 @@ class SettingsScreen extends ConsumerWidget {
     final profile = ref.watch(profileProvider).currentProfile;
     final premium = ref.watch(premiumProvider);
     final daily = ref.watch(dailyLoginProvider);
+    final sansuProfile = ref.watch(sansuProfileProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -39,6 +41,17 @@ class SettingsScreen extends ConsumerWidget {
                 onTap: () => Navigator.of(context).pushNamed('/profile-selection'),
               ),
             ],
+
+            const SizedBox(height: 16),
+
+            // 主人公の設定（②主人公文章題）
+            _SectionHeader('文章題の主人公'),
+            _SettingCard(
+              emoji: '🎒',
+              title: '好きなもの: ${sansuProfile.favoriteItem}',
+              subtitle: '文章題に登場するものを選べるよ',
+              onTap: () => _showFavoriteItemDialog(context, ref, sansuProfile.favoriteItem),
+            ),
 
             const SizedBox(height: 16),
 
@@ -314,6 +327,55 @@ class _InfoCard extends StatelessWidget {
       child: Column(children: children),
     );
   }
+}
+
+// ─── 好きなもの選択ダイアログ（②主人公文章題） ─────────────────────
+void _showFavoriteItemDialog(
+    BuildContext context, WidgetRef ref, String currentItem) {
+  showDialog(
+    context: context,
+    builder: (ctx) => AlertDialog(
+      shape:
+          RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      title: const Text('🎒 好きなものを選んでね'),
+      content: Wrap(
+        spacing: 8,
+        runSpacing: 8,
+        children: kFavoriteItemOptions.map((item) {
+          final isSelected = item == currentItem;
+          return GestureDetector(
+            onTap: () {
+              ref.read(sansuProfileProvider.notifier).setFavoriteItem(item);
+              Navigator.pop(ctx);
+            },
+            child: Container(
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: isSelected ? kPrimaryColor : Colors.grey.shade100,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isSelected ? kPrimaryColor : Colors.grey.shade300,
+                ),
+              ),
+              child: Text(
+                item,
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: isSelected ? Colors.white : kTextDark,
+                ),
+              ),
+            ),
+          );
+        }).toList(),
+      ),
+      actions: [
+        TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('とじる'))
+      ],
+    ),
+  );
 }
 
 class _InfoRow extends StatelessWidget {
