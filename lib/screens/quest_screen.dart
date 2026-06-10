@@ -8,6 +8,7 @@ import '../providers/profile_provider.dart';
 import '../providers/sansu_profile_provider.dart';
 import '../theme/app_theme.dart';
 import '../widgets/furigana_text.dart';
+import '../widgets/calculation_steps_widget.dart';
 
 class QuestScreen extends ConsumerStatefulWidget {
   final Stage stage;
@@ -301,6 +302,13 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                       ),
                       textAlign: TextAlign.center,
                     ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  // ─── 計算過程（ヒント） ───────────────────────────
+                  CalculationStepsWidget(
+                    question: _current,
+                    showSteps: _answered,
                   ),
                   const SizedBox(height: 24),
 

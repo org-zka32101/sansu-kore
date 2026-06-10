@@ -69,10 +69,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              titlePadding: const EdgeInsets.only(left: 16, bottom: 14, right: 16),
-              title: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
+              titlePadding: const EdgeInsets.only(bottom: 14),
+              title: Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
                   const Text(
                     '🔴 算数コレ！',
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
@@ -83,6 +84,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       style: const TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                 ],
+                ),
               ),
             ),
             actions: [
