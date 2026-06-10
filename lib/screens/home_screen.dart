@@ -110,6 +110,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               PopupMenuButton(
                 itemBuilder: (context) => [
                   PopupMenuItem(
+                    child: const Text('📊 誤答分析'),
+                    onTap: () => Navigator.pushNamed(context, '/analysis'),
+                  ),
+                  PopupMenuItem(
                     child: const Text('プロフィール変更'),
                     onTap: () => Navigator.pushReplacementNamed(context, '/profile-selection'),
                   ),

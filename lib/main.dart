@@ -25,6 +25,7 @@ import 'screens/splash_screen.dart';
 import 'screens/stage_select_screen.dart';
 import 'screens/infinite_practice_screen.dart';
 import 'screens/upgrade_screen.dart';
+import 'screens/analysis_dashboard_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -78,6 +79,7 @@ class SansuKoreApp extends ConsumerWidget {
         '/growth': (context) => const GrowthScreen(),
         '/invite': (context) => const InviteScreen(),
         '/math-guide': (context) => const MathGuideScreen(),
+        '/analysis': (context) => const AnalysisDashboardScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/quest') {
