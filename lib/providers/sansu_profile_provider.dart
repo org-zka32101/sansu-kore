@@ -1,5 +1,7 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firestore_provider.dart';
 
 const _favoriteItemKey = 'sansu_favorite_item';
 
@@ -29,9 +31,20 @@ class SansuProfileNotifier extends Notifier<SansuProfileState> {
 
   Future<void> setFavoriteItem(String item) async {
     if (item.trim().isEmpty) return;
-    state = state.copyWith(favoriteItem: item.trim());
+    final trimmed = item.trim();
+    state = state.copyWith(favoriteItem: trimmed);
+
+    // 1. SharedPreferences保存（ローカル）
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_favoriteItemKey, item.trim());
+    await prefs.setString(_favoriteItemKey, trimmed);
+
+    // 2. Firestore保存（クラウド）
+    final userId = FirebaseAuth.instance.currentUser?.uid;
+    if (userId != null) {
+      await UserProfileSync.updateProfile(userId, {
+        'favoriteItem': trimmed,
+      });
+    }
   }
 }
 

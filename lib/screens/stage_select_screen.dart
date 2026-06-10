@@ -15,25 +15,21 @@ class StageSelectScreen extends ConsumerStatefulWidget {
 
 class _StageSelectScreenState extends ConsumerState<StageSelectScreen> {
   int _gradeFilter = 0; // 0=全て
-  MathTopicType? _topicFilter;
 
-  List<Stage> get _filteredStages {
-    final all = <Stage>[];
-    for (var g = 1; g <= 6; g++) {
-      all.addAll(getStagesForGrade(g));
+  List<Stage> _stagesForGrade(int grade) => getStagesForGrade(grade);
+
+  void _onTapStage(BuildContext context, Stage stage, bool isPremiumLocked, bool isLocked) {
+    if (isPremiumLocked) {
+      Navigator.of(context).pushNamed('/upgrade');
+    } else if (!isLocked) {
+      Navigator.of(context).pushNamed('/quest', arguments: stage);
     }
-    return all.where((s) {
-      if (_gradeFilter != 0 && s.grade != _gradeFilter) return false;
-      if (_topicFilter != null && s.topicType != _topicFilter) return false;
-      return true;
-    }).toList();
   }
 
   @override
   Widget build(BuildContext context) {
     final progress = ref.watch(progressProvider);
     final premium = ref.watch(premiumProvider);
-    final filtered = _filteredStages;
 
     return Scaffold(
       appBar: AppBar(
@@ -53,45 +49,19 @@ class _StageSelectScreenState extends ConsumerState<StageSelectScreen> {
       ),
       body: Column(
         children: [
-          // 学年フィルター
           _GradeFilterBar(
             selected: _gradeFilter,
             onSelected: (g) => setState(() => _gradeFilter = g),
           ),
-          // ステージリスト
           Expanded(
-            child: filtered.isEmpty
-                ? const Center(child: Text('ステージがありません'))
-                : ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 40),
-                    itemCount: filtered.length,
-                    itemBuilder: (context, i) {
-                      final stage = filtered[i];
-                      final isCleared = progress.isCleared(stage.grade, stage.stageNumber);
-                      final sameGroup = filtered
-                          .where((s) => s.grade == stage.grade)
-                          .toList();
-                      final idx = sameGroup.indexOf(stage);
-                      final isLocked = idx > 0 &&
-                          !progress.isCleared(sameGroup[idx - 1].grade, sameGroup[idx - 1].stageNumber);
-                      final isPremiumLocked =
-                          !premium.isPremium && !premium.isTrialActive &&
-                          stage.stageNumber > kFreeStageLimit;
-
-                      return _StageCard(
-                        stage: stage,
-                        isCleared: isCleared,
-                        isLocked: isLocked,
-                        isPremiumLocked: isPremiumLocked,
-                        onTap: () {
-                          if (isPremiumLocked) {
-                            Navigator.of(context).pushNamed('/upgrade');
-                          } else if (!isLocked) {
-                            Navigator.of(context).pushNamed('/quest', arguments: stage);
-                          }
-                        },
-                      );
-                    },
+            child: _gradeFilter == 0
+                ? _AllGradesView(progress: progress, premium: premium, onTap: _onTapStage)
+                : _SingleGradeGrid(
+                    grade: _gradeFilter,
+                    stages: _stagesForGrade(_gradeFilter),
+                    progress: progress,
+                    premium: premium,
+                    onTap: _onTapStage,
                   ),
           ),
         ],
@@ -100,6 +70,343 @@ class _StageSelectScreenState extends ConsumerState<StageSelectScreen> {
   }
 }
 
+// ── 全学年ビュー（学年ごとのセクション） ──────────────────────────
+class _AllGradesView extends StatelessWidget {
+  final LearningProgress progress;
+  final PremiumState premium;
+  final void Function(BuildContext, Stage, bool, bool) onTap;
+
+  const _AllGradesView({required this.progress, required this.premium, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      padding: const EdgeInsets.only(bottom: 40),
+      itemCount: 6,
+      itemBuilder: (context, index) {
+        final grade = index + 1;
+        final stages = getStagesForGrade(grade);
+        final cleared = stages.where((s) => progress.isCleared(s.grade, s.stageNumber)).length;
+        return _GradeSection(
+          grade: grade,
+          stages: stages,
+          cleared: cleared,
+          progress: progress,
+          premium: premium,
+          onTap: onTap,
+        );
+      },
+    );
+  }
+}
+
+class _GradeSection extends StatelessWidget {
+  final int grade;
+  final List<Stage> stages;
+  final int cleared;
+  final LearningProgress progress;
+  final PremiumState premium;
+  final void Function(BuildContext, Stage, bool, bool) onTap;
+
+  const _GradeSection({
+    required this.grade,
+    required this.stages,
+    required this.cleared,
+    required this.progress,
+    required this.premium,
+    required this.onTap,
+  });
+
+  static const _gradeColors = [
+    Color(0xFFE74C3C), Color(0xFFE67E22), Color(0xFF2ECC71),
+    Color(0xFF3498DB), Color(0xFF9B59B6), Color(0xFF1ABC9C),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _gradeColors[grade - 1];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 学年ヘッダー
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: color,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '小学${grade}年生',
+                  style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Text(
+                '$cleared / ${stages.length} クリア',
+                style: const TextStyle(color: kTextMuted, fontSize: 13),
+              ),
+              const Spacer(),
+              // 進捗バー
+              SizedBox(
+                width: 80,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: stages.isEmpty ? 0 : cleared / stages.length,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    minHeight: 6,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        // ステージグリッド
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 4,
+              crossAxisSpacing: 8,
+              mainAxisSpacing: 8,
+              childAspectRatio: 0.85,
+            ),
+            itemCount: stages.length,
+            itemBuilder: (context, i) {
+              final stage = stages[i];
+              final isCleared = progress.isCleared(stage.grade, stage.stageNumber);
+              final isLocked = i > 0 && !progress.isCleared(stages[i - 1].grade, stages[i - 1].stageNumber);
+              final isPremiumLocked = !premium.isPremium && !premium.isTrialActive &&
+                  stage.stageNumber > kFreeStageLimit;
+              return _StageGridCell(
+                stage: stage,
+                isCleared: isCleared,
+                isLocked: isLocked,
+                isPremiumLocked: isPremiumLocked,
+                gradeColor: color,
+                onTap: () => onTap(context, stage, isPremiumLocked, isLocked),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: 4),
+        Divider(color: Colors.grey.shade200, height: 1),
+      ],
+    );
+  }
+}
+
+// ── 単一学年グリッド（3列） ───────────────────────────────────────
+class _SingleGradeGrid extends StatelessWidget {
+  final int grade;
+  final List<Stage> stages;
+  final LearningProgress progress;
+  final PremiumState premium;
+  final void Function(BuildContext, Stage, bool, bool) onTap;
+
+  const _SingleGradeGrid({
+    required this.grade,
+    required this.stages,
+    required this.progress,
+    required this.premium,
+    required this.onTap,
+  });
+
+  static const _gradeColors = [
+    Color(0xFFE74C3C), Color(0xFFE67E22), Color(0xFF2ECC71),
+    Color(0xFF3498DB), Color(0xFF9B59B6), Color(0xFF1ABC9C),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final color = _gradeColors[grade - 1];
+    final cleared = stages.where((s) => progress.isCleared(s.grade, s.stageNumber)).length;
+
+    return Column(
+      children: [
+        // 進捗ヘッダー
+        Container(
+          color: Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+          child: Row(
+            children: [
+              Text(
+                '小学${grade}年生 — $cleared / ${stages.length} クリア',
+                style: TextStyle(fontWeight: FontWeight.bold, color: color, fontSize: 14),
+              ),
+              const Spacer(),
+              SizedBox(
+                width: 100,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: stages.isEmpty ? 0 : cleared / stages.length,
+                    backgroundColor: Colors.grey.shade200,
+                    valueColor: AlwaysStoppedAnimation<Color>(color),
+                    minHeight: 8,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        Expanded(
+          child: GridView.builder(
+            padding: const EdgeInsets.fromLTRB(12, 12, 12, 40),
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 10,
+              mainAxisSpacing: 10,
+              childAspectRatio: 0.82,
+            ),
+            itemCount: stages.length,
+            itemBuilder: (context, i) {
+              final stage = stages[i];
+              final isCleared = progress.isCleared(stage.grade, stage.stageNumber);
+              final isLocked = i > 0 && !progress.isCleared(stages[i - 1].grade, stages[i - 1].stageNumber);
+              final isPremiumLocked = !premium.isPremium && !premium.isTrialActive &&
+                  stage.stageNumber > kFreeStageLimit;
+              return _StageGridCell(
+                stage: stage,
+                isCleared: isCleared,
+                isLocked: isLocked,
+                isPremiumLocked: isPremiumLocked,
+                gradeColor: color,
+                onTap: () => onTap(context, stage, isPremiumLocked, isLocked),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+// ── グリッドセル ─────────────────────────────────────────────────
+class _StageGridCell extends StatelessWidget {
+  final Stage stage;
+  final bool isCleared;
+  final bool isLocked;
+  final bool isPremiumLocked;
+  final Color gradeColor;
+  final VoidCallback onTap;
+
+  const _StageGridCell({
+    required this.stage,
+    required this.isCleared,
+    required this.isLocked,
+    required this.isPremiumLocked,
+    required this.gradeColor,
+    required this.onTap,
+  });
+
+  String _topicEmoji(MathTopicType t) {
+    switch (t) {
+      case MathTopicType.addition:       return '➕';
+      case MathTopicType.subtraction:    return '➖';
+      case MathTopicType.multiplication: return '✖️';
+      case MathTopicType.division:       return '➗';
+      case MathTopicType.fraction:       return '½';
+      case MathTopicType.decimal:        return '0.5';
+      case MathTopicType.geometry:       return '📐';
+      case MathTopicType.word:           return '📝';
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final locked = isLocked || isPremiumLocked;
+    final bg = isCleared
+        ? kAccentGreen.withAlpha(18)
+        : locked
+            ? Colors.grey.shade100
+            : Colors.white;
+    final borderColor = isCleared
+        ? kAccentGreen
+        : locked
+            ? Colors.grey.shade300
+            : gradeColor.withAlpha(60);
+
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedOpacity(
+        opacity: (isLocked && !isPremiumLocked) ? 0.5 : 1.0,
+        duration: const Duration(milliseconds: 200),
+        child: Container(
+          decoration: BoxDecoration(
+            color: bg,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: borderColor, width: isCleared ? 2 : 1),
+            boxShadow: locked
+                ? null
+                : [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4, offset: const Offset(0, 2))],
+          ),
+          child: Stack(
+            children: [
+              // クリア済みチェック
+              if (isCleared)
+                const Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Icon(Icons.check_circle, color: kAccentGreen, size: 16),
+                ),
+              // PRO星マーク
+              if (isPremiumLocked)
+                const Positioned(
+                  top: 6,
+                  right: 6,
+                  child: Icon(Icons.star, color: kAccentOrange, size: 16),
+                ),
+              // コンテンツ
+              Padding(
+                padding: const EdgeInsets.fromLTRB(8, 10, 8, 8),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      locked ? '🔒' : _topicEmoji(stage.topicType),
+                      style: const TextStyle(fontSize: 26),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${stage.stageNumber}',
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                        color: locked ? kTextMuted : gradeColor,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      stage.title,
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: locked ? kTextMuted : kTextDark,
+                        height: 1.2,
+                      ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ── フィルターバー ───────────────────────────────────────────────
 class _GradeFilterBar extends StatelessWidget {
   final int selected;
   final ValueChanged<int> onSelected;
@@ -110,7 +417,10 @@ class _GradeFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       height: 48,
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        boxShadow: [BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 4, offset: const Offset(0, 2))],
+      ),
       child: ListView(
         scrollDirection: Axis.horizontal,
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -153,126 +463,6 @@ class _FilterChip extends StatelessWidget {
               color: selected ? Colors.white : kTextMuted,
               fontWeight: selected ? FontWeight.bold : FontWeight.normal,
               fontSize: 13,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _StageCard extends StatelessWidget {
-  final Stage stage;
-  final bool isCleared;
-  final bool isLocked;
-  final bool isPremiumLocked;
-  final VoidCallback onTap;
-
-  const _StageCard({
-    required this.stage,
-    required this.isCleared,
-    required this.isLocked,
-    required this.isPremiumLocked,
-    required this.onTap,
-  });
-
-  String _topicEmoji(MathTopicType t) {
-    switch (t) {
-      case MathTopicType.addition: return '➕';
-      case MathTopicType.subtraction: return '➖';
-      case MathTopicType.multiplication: return '✖️';
-      case MathTopicType.division: return '➗';
-      case MathTopicType.fraction: return '½';
-      case MathTopicType.decimal: return '0.5';
-      case MathTopicType.geometry: return '📐';
-      case MathTopicType.word: return '📝';
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final locked = isLocked || isPremiumLocked;
-
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: GestureDetector(
-        onTap: onTap,
-        child: AnimatedOpacity(
-          opacity: locked ? 0.6 : 1.0,
-          duration: const Duration(milliseconds: 200),
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isCleared ? kAccentGreen : Colors.grey.shade200,
-                width: isCleared ? 2 : 1,
-              ),
-              boxShadow: [
-                BoxShadow(color: Colors.black.withAlpha(8), blurRadius: 6, offset: const Offset(0, 2)),
-              ],
-            ),
-            child: Row(
-              children: [
-                Container(
-                  width: 52,
-                  height: 52,
-                  decoration: BoxDecoration(
-                    color: isCleared ? kAccentGreen.withAlpha(20) : kPrimaryColor.withAlpha(15),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Center(
-                    child: Text(
-                      locked ? '🔒' : _topicEmoji(stage.topicType),
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: kPrimaryColor.withAlpha(20),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Text(
-                              '小${stage.grade}',
-                              style: const TextStyle(fontSize: 11, color: kPrimaryColor, fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'ステージ ${stage.stageNumber}',
-                            style: const TextStyle(fontSize: 12, color: kTextMuted),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        stage.title,
-                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: kTextDark),
-                      ),
-                      Text(
-                        '${stage.totalQuestions}問',
-                        style: const TextStyle(fontSize: 12, color: kTextMuted),
-                      ),
-                    ],
-                  ),
-                ),
-                if (isCleared)
-                  const Icon(Icons.check_circle, color: kAccentGreen, size: 28)
-                else if (isPremiumLocked)
-                  const Icon(Icons.star, color: kAccentOrange, size: 28)
-                else if (!isLocked)
-                  const Icon(Icons.arrow_forward_ios, color: kTextMuted, size: 18),
-              ],
             ),
           ),
         ),

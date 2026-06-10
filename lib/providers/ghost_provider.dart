@@ -1,6 +1,9 @@
 import 'dart:convert';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'firestore_provider.dart';
 
 const _ghostPrefKey = 'ghost_records_v1';
 
@@ -73,11 +76,24 @@ class GhostState {
 class GhostNotifier extends Notifier<GhostState> {
   @override
   GhostState build() {
-    _load();
+    _init();
     return const GhostState();
   }
 
-  Future<void> _load() async {
+  Future<void> _init() async {
+    try {
+      // 1. SharedPreferencesから読み込み
+      await _loadLocal();
+
+      // 2. Firestoreから同期（バックグラウンド）
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        _syncFromFirestore(userId);
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _loadLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final raw = prefs.getString(_ghostPrefKey);
     if (raw == null) return;
@@ -94,6 +110,14 @@ class GhostNotifier extends Notifier<GhostState> {
     } catch (_) {}
   }
 
+  Future<void> _syncFromFirestore(String userId) async {
+    try {
+      final records = await GhostRecordSync.getGhostRecordsByStage(userId, 0);
+      // ここで全ステージの最速レコード取得・統合
+      // （実装省略：複数ステージ対応）
+    } catch (_) {}
+  }
+
   /// 新しいレコードを保存（最速のみ保持）
   /// 保存後、旧レコードと比較して更新した場合は true を返す
   Future<bool> saveRecord(GhostRecord record) async {
@@ -104,13 +128,29 @@ class GhostNotifier extends Notifier<GhostState> {
     if (isNewRecord) {
       newMap[record.stageId] = record;
       state = state.copyWith(records: newMap);
-      final prefs = await SharedPreferences.getInstance();
-      final encoded = jsonEncode(
-        newMap.map((k, v) => MapEntry(k.toString(), v.toJson())),
-      );
-      await prefs.setString(_ghostPrefKey, encoded);
+
+      // 1. SharedPreferences保存（ローカル）
+      await _saveLocal(newMap);
+
+      // 2. Firestore保存（クラウド）
+      final userId = FirebaseAuth.instance.currentUser?.uid;
+      if (userId != null) {
+        await GhostRecordSync.saveGhostRecord(
+          userId,
+          stageId: record.stageId,
+          questionMs: record.questionMs,
+        );
+      }
     }
     return isNewRecord;
+  }
+
+  Future<void> _saveLocal(Map<int, GhostRecord> records) async {
+    final prefs = await SharedPreferences.getInstance();
+    final encoded = jsonEncode(
+      records.map((k, v) => MapEntry(k.toString(), v.toJson())),
+    );
+    await prefs.setString(_ghostPrefKey, encoded);
   }
 
   GhostRecord? getRecord(int stageId) => state.records[stageId];

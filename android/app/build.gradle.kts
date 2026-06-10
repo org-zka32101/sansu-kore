@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("kotlin-android")
     id("dev.flutter.flutter-gradle-plugin")
-    // id("com.google.gms.google-services")  // TODO: flutterfire configure 後に有効化
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -31,7 +31,7 @@ android {
 
     defaultConfig {
         applicationId = "com.petitworksapps.shougakukore.sansu"
-        minSdk = flutter.minSdkVersion
+        minSdk = 21
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
