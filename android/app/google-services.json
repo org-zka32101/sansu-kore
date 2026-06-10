@@ -1,0 +1,34 @@
+{
+  "project_info": {
+    "project_number": "216377882454",
+    "project_id": "petit-works-apps-9029a",
+    "storage_bucket": "petit-works-apps-9029a.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:216377882454:android:52c82181eb491bb5d108f7",
+        "android_client_info": {
+          "package_name": "com.petitworksapps.shougakukore.sansu"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "216377882454-ltvkcchk8v0b1u633pte483jkg1lmor8.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

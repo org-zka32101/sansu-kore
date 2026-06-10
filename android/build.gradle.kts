@@ -1,8 +1,7 @@
-// TODO: flutterfire configure 後に以下を有効化
-// buildscript {
-//     repositories { google(); mavenCentral() }
-//     dependencies { classpath("com.google.gms:google-services:4.4.2") }
-// }
+buildscript {
+    repositories { google(); mavenCentral() }
+    dependencies { classpath("com.google.gms:google-services:4.4.2") }
+}
 
 allprojects {
     repositories {

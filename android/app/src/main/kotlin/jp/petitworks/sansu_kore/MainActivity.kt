@@ -1,6 +1,5 @@
-﻿package jp.petitworks.sansu_kore
+﻿package com.petitworksapps.shougakukore.sansu
 
 import io.flutter.embedding.android.FlutterActivity
 
 class MainActivity : FlutterActivity()
-
