@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/growth_provider.dart';
 import '../providers/profile_provider.dart';
+import '../providers/adaptive_provider.dart';
 import '../theme/app_theme.dart';
 
 class GrowthScreen extends ConsumerStatefulWidget {
@@ -69,6 +70,10 @@ class _GrowthScreenState extends ConsumerState<GrowthScreen> {
                 const SizedBox(height: 16),
               ],
             ],
+
+            // 誤答分析ダッシュボード
+            const _AdaptiveAnalysisCard(),
+            const SizedBox(height: 16),
 
             // タイムカプセルメッセージ
             _TimeCapsuleSection(
@@ -447,6 +452,190 @@ class _TimeCapsuleSection extends StatelessWidget {
               child: const Text('メッセージを保存'),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── 誤答分析ダッシュボード ──────────────────────────────────────────
+class _AdaptiveAnalysisCard extends ConsumerWidget {
+  const _AdaptiveAnalysisCard();
+
+  static const _topicEmoji = {
+    'addition': '➕',
+    'subtraction': '➖',
+    'multiplication': '✖️',
+    'division': '➗',
+    'fraction': '½',
+    'decimal': '.5',
+    'geometry': '📐',
+    'word': '📝',
+  };
+
+  static const _topicLabel = {
+    'addition': 'たし算',
+    'subtraction': 'ひき算',
+    'multiplication': 'かけ算',
+    'division': 'わり算',
+    'fraction': '分数',
+    'decimal': '小数',
+    'geometry': '図形',
+    'word': '文章題',
+  };
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final adaptive = ref.watch(adaptiveProvider);
+
+    if (adaptive.topicAccuracies.isEmpty) {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.black.withAlpha(8), blurRadius: 8)
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Row(
+              children: [
+                Text('📊', style: TextStyle(fontSize: 20)),
+                SizedBox(width: 8),
+                Text('学習分析',
+                    style: TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              '問題を解くとここに得意・苦手が表示されるよ！',
+              style: TextStyle(fontSize: 12, color: Colors.grey),
+            ),
+          ],
+        ),
+      );
+    }
+
+    // トピック別の正答率をソート
+    final topics = adaptive.topicAccuracies.entries.toList()
+        ..sort((a, b) => a.value.accuracy.compareTo(b.value.accuracy));
+
+    // 苦手トピック（60%未満）
+    final weakTopic = adaptive.weakestTopic;
+    final weakLabel =
+        weakTopic != null ? _topicLabel[weakTopic.name] ?? '?' : null;
+
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+              color: Colors.black.withAlpha(8), blurRadius: 8)
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Text('📊', style: TextStyle(fontSize: 20)),
+              SizedBox(width: 8),
+              Text('学習分析',
+                  style: TextStyle(
+                      fontSize: 15, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // トピック別正答率
+          ...topics.map((entry) {
+            final topic = entry.key;
+            final accuracy = entry.value.accuracy;
+            final emoji = _topicEmoji[topic.name] ?? '?';
+            final label = _topicLabel[topic.name] ?? 'unknown';
+            final pct = (accuracy * 100).toStringAsFixed(0);
+            final isWeak = accuracy < 0.6;
+
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(emoji, style: const TextStyle(fontSize: 16)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(label,
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w600)),
+                      ),
+                      Text('$pct%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: isWeak
+                                ? kPrimaryColor
+                                : kAccentGreen,
+                          )),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(6),
+                    child: LinearProgressIndicator(
+                      value: accuracy.clamp(0.0, 1.0),
+                      backgroundColor: Colors.grey.shade200,
+                      valueColor: AlwaysStoppedAnimation<Color>(
+                        isWeak
+                            ? const Color(0xFFE74C3C)
+                            : kAccentGreen,
+                      ),
+                      minHeight: 6,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }).toList(),
+
+          // 苦手トピック提案
+          if (weakLabel != null) ...[
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: const Color(0xFFFEEAEA),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(
+                  color: const Color(0xFFE74C3C).withAlpha(100),
+                ),
+              ),
+              child: Row(
+                children: [
+                  const Text('💡', style: TextStyle(fontSize: 16)),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '$weakLabel を重点練習してみよう！',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFC62828),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );
