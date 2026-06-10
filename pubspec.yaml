@@ -26,6 +26,8 @@ dependencies:
   uuid: ^4.0.0
   google_mobile_ads: ^5.2.0
   share_plus: ^10.1.4
+  flutter_tts: ^4.2.5
+  http: ^1.2.0
 
 dev_dependencies:
   flutter_test:
