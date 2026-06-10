@@ -156,4 +156,20 @@ const allSansuBadges = [
     category: BadgeCategory.content1,
     requiredCount: 500,
   ),
+  BadgeModel(
+    id: 'weekly_challenge_1',
+    title: 'チャレンジャー',
+    description: 'ウィークリーチャレンジ1週完走',
+    emoji: '🏆',
+    category: BadgeCategory.special,
+    requiredCount: 1,
+  ),
+  BadgeModel(
+    id: 'weekly_challenge_4',
+    title: '継続の鬼',
+    description: 'ウィークリーチャレンジ4週連続完走',
+    emoji: '👹',
+    category: BadgeCategory.special,
+    requiredCount: 4,
+  ),
 ];

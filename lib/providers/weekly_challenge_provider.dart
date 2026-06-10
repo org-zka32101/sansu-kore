@@ -6,6 +6,8 @@ import '../data/stage_data.dart';
 
 // ウィークリーチャレンジ — 毎週月曜リセット、10問
 const _wcStateKey = 'weekly_challenge_state';
+const _wcStreakKey = 'weekly_challenge_streak'; // 連続完走週数
+const _wcLastWeekKey = 'weekly_challenge_last_week'; // 最後に完走した週キー
 
 class WeeklyChallengeState {
   final int weekKey; // yyyyWww で表す週番号
@@ -128,6 +130,18 @@ class WeeklyChallengeNotifier extends Notifier<WeeklyChallengeState> {
     final newState = state.copyWith(rewardClaimed: true);
     state = newState;
     await _save(newState);
+
+    // ウィークリーチャレンジ完走時に連続カウント更新
+    if (state.isAllDone) {
+      final prefs = await SharedPreferences.getInstance();
+      final lastWeek = prefs.getInt(_wcLastWeekKey) ?? 0;
+      final currentStreak = prefs.getInt(_wcStreakKey) ?? 0;
+
+      // 前週から連続していてるかチェック（隔週で完走した場合はリセット）
+      final newStreak = lastWeek + 1 == state.weekKey ? currentStreak + 1 : 1;
+      await prefs.setInt(_wcStreakKey, newStreak);
+      await prefs.setInt(_wcLastWeekKey, state.weekKey);
+    }
   }
 
   Future<void> _save(WeeklyChallengeState s) async {
