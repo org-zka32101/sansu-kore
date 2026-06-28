@@ -38,6 +38,10 @@ web/
 .env
 .env.local
 
+# Firebase (secrets)
+android/app/google-services.json
+ios/Runner/GoogleService-Info.plist
+
 # OS
 Thumbs.db
 

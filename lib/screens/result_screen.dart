@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_core/shared_core.dart' show characterStateProvider;
 import '../models/quest_model.dart';
-import '../models/badge_model.dart';
+import 'package:shared_core/models/badge_model.dart';
 import '../providers/progress_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/coin_provider.dart';

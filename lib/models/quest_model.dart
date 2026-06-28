@@ -13,8 +13,9 @@ class QuizQuestion {
   final String explanation;
   final String? hint;
   /// ④誤答パターン分類: 選択肢テキスト → エラーヒント文
-  /// 例: {'15': 'くり上がりに注意！', '5': 'ひき算と混ざったかな？'}
   final Map<String, String>? wrongHints;
+  /// 図形ビジュアル表示用: 'triangle', 'circle', 'square' など
+  final String? shapeName;
 
   const QuizQuestion({
     required this.id,
@@ -26,6 +27,7 @@ class QuizQuestion {
     required this.explanation,
     this.hint,
     this.wrongHints,
+    this.shapeName,
   });
 
   /// 選択肢をランダムに並べ替える
@@ -54,7 +56,8 @@ class QuizQuestion {
       correctIndex: newCorrectIndex,
       explanation: explanation,
       hint: hint,
-      wrongHints: wrongHints, // キーは選択肢テキストなのでシャッフル後もそのまま有効
+      wrongHints: wrongHints,
+      shapeName: shapeName,
     );
   }
 

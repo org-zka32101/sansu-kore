@@ -1,26 +1,40 @@
 {
   "project_info": {
-    "project_number": "216377882454",
-    "project_id": "petit-works-apps-9029a",
-    "storage_bucket": "petit-works-apps-9029a.firebasestorage.app"
+    "project_number": "492221061005",
+    "project_id": "petit-works-education",
+    "storage_bucket": "petit-works-education.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:216377882454:android:52c82181eb491bb5d108f7",
+        "mobilesdk_app_id": "1:492221061005:android:0c9d94f157252096c88fc4",
+        "android_client_info": {
+          "package_name": "com.petitworksapps.shougakukore.kokugo"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCBwPBEXptIW_8wl0_hWtZhpSJcuod00Eg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:492221061005:android:bb5b4b43e1378b63c88fc4",
         "android_client_info": {
           "package_name": "com.petitworksapps.shougakukore.sansu"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "216377882454-ltvkcchk8v0b1u633pte483jkg1lmor8.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg"
+          "current_key": "AIzaSyCBwPBEXptIW_8wl0_hWtZhpSJcuod00Eg"
         }
       ],
       "services": {

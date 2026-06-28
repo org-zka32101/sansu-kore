@@ -14,6 +14,27 @@ class ProfileSelectionScreen extends ConsumerStatefulWidget {
 class _ProfileSelectionScreenState extends ConsumerState<ProfileSelectionScreen> {
   late TextEditingController _nameController;
   int _selectedGrade = 1;
+  int _selectedAvatarIndex = 0;
+
+  // アバター一覧（ファイル名順）
+  static const List<String> avatarFiles = [
+    '1. 茶色クマ  (honhon - Brown Bear).jpg',
+    '2. 黒猫  (kuro-neko - Black Cat).jpg',
+    '3. パンダ  (panda - Giant Panda).jpg',
+    '4. キツネ  (kitsune - Fox).jpg',
+    '5. ウサギ  (usagi - Rabbit).jpg',
+    '6. トラ  (tora - Tiger).jpg',
+    '7. ライオン  (raion - Lion).jpg',
+    '8. カエル  (kaeru - Frog).jpg',
+    '9. アヒル  (ahiru - Duck).jpg',
+    '10. ブタ  (buta - Pig).jpg',
+    '11. コアラ  (koala - Koala).jpg',
+    '12. キリン  (kirin - Giraffe).jpg',
+    '13. カンガルー (kangaroo).jpg',
+    '14. イヌ  (inu - Dog).jpg',
+    '15. アライグマ  (arai-guma - Raccoon).jpg',
+    '16. ナマケモノ  (namakemono - Sloth).jpg',
+  ];
 
   @override
   void initState() {
@@ -30,6 +51,7 @@ class _ProfileSelectionScreenState extends ConsumerState<ProfileSelectionScreen>
   void _showAddProfileDialog() {
     _nameController.clear();
     _selectedGrade = 1;
+    _selectedAvatarIndex = 0;
 
     showDialog(
       context: context,
@@ -51,6 +73,35 @@ class _ProfileSelectionScreenState extends ConsumerState<ProfileSelectionScreen>
                   return DropdownMenuItem(value: g, child: Text('小学$g年生'));
                 }).toList(),
                 onChanged: (val) => setDialogState(() => _selectedGrade = val ?? 1),
+              ),
+              const SizedBox(height: 16),
+              const Text('アバターを選ぶ', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: 120,
+                child: GridView.builder(
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 4,
+                    crossAxisSpacing: 8,
+                    mainAxisSpacing: 8,
+                  ),
+                  itemCount: avatarFiles.length,
+                  itemBuilder: (context, index) {
+                    return GestureDetector(
+                      onTap: () => setDialogState(() => _selectedAvatarIndex = index),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          border: Border.all(
+                            color: _selectedAvatarIndex == index ? kPrimaryColor : Colors.grey,
+                            width: _selectedAvatarIndex == index ? 3 : 1,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Image.asset('assets/avatars/${avatarFiles[index]}', fit: BoxFit.cover),
+                      ),
+                    );
+                  },
+                ),
               ),
             ],
           ),

@@ -37,6 +37,7 @@ class TtsNotifier extends Notifier<TtsState> {
   @override
   TtsState build() {
     _init();
+    ref.onDispose(() => _tts.stop());
     return const TtsState();
   }
 
@@ -98,16 +99,6 @@ class TtsNotifier extends Notifier<TtsState> {
     }
   }
 
-  /// 再開
-  Future<void> resume() async {
-    try {
-      await _tts.resume();
-      state = state.copyWith(isSpeaking: true);
-    } catch (e) {
-      if (kDebugMode) print('TTS resume error: $e');
-    }
-  }
-
   /// 音量を変更（0.0 ~ 1.0）
   Future<void> setVolume(double volume) async {
     if (volume < 0 || volume > 1) return;
@@ -140,11 +131,6 @@ class TtsNotifier extends Notifier<TtsState> {
     }
   }
 
-  @override
-  void dispose() {
-    _tts.stop();
-    super.dispose();
-  }
 }
 
 final ttsProvider = NotifierProvider<TtsNotifier, TtsState>(

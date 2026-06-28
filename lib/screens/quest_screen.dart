@@ -6,9 +6,12 @@ import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/sansu_profile_provider.dart';
+import '../providers/character_level_provider.dart';
 import '../theme/app_theme.dart';
+import '../providers/tts_provider.dart';
 import '../widgets/furigana_text.dart';
 import '../widgets/calculation_steps_widget.dart';
+import '../widgets/geometry_visual_widget.dart';
 
 class QuestScreen extends ConsumerStatefulWidget {
   final Stage stage;
@@ -42,6 +45,9 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
   // ─── ②主人公文章題 ──────────────────────────────────────────
   String _playerName = '';
   String _favoriteItem = 'りんご';
+
+  // ─── キャラクター表示 ────────────────────────────────────────
+  String _displayCharacterId = 'ichiko'; // デフォルトキャラ
 
   QuizQuestion get _current => widget.stage.questions[_currentIndex];
   bool get _isCorrect => _selectedAnswer == _current.correctIndex;
@@ -103,11 +109,117 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
     setState(() {
       _playerName = profile?.name ?? 'きみ';
       _favoriteItem = sansu.favoriteItem;
+      // ステージから対応するキャラクターを選択
+      _displayCharacterId = _getCharacterByStage(widget.stage);
     });
+  }
+
+  /// ステージの進度に応じてキャラクターを選択
+  String _getCharacterByStage(Stage stage) {
+    // ステージID計算
+    final stageId = stage.grade * 100 + stage.stageNumber;
+
+    // 各キャラクターのアンロック条件（ステージID）
+    // Tier 1: イチコ(0)、ニニコ(3)、トライ(5)、フォーク(8)
+    // Tier 2: ゴーゴ(12)、その他
+    // 進度に応じてキャラを選択
+    if (stageId >= 48) return 'plus_minus'; // 最終ボス
+    if (stageId >= 40) return 'calcuku';
+    if (stageId >= 32) return 'geome';
+    if (stageId >= 24) return 'divido';
+    if (stageId >= 18) return 'multiko';
+    if (stageId >= 12) return 'gogo';
+    if (stageId >= 8) return 'fouku';
+    if (stageId >= 5) return 'trai';
+    if (stageId >= 3) return 'niniko';
+    return 'ichiko'; // デフォルト
+  }
+
+  /// キャラクター画像表示ウィジェット（Lv対応）
+  Widget _buildCharacterImage({
+    required String characterId,
+    required int level,
+  }) {
+    final imagePath = getCharacterImagePath(characterId, level);
+
+    return Container(
+      height: 180,
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(16),
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.blue.shade50,
+            Colors.blue.shade100.withAlpha(30),
+          ],
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // キャラクター画像
+          Image.asset(
+            imagePath,
+            fit: BoxFit.contain,
+            errorBuilder: (context, error, stackTrace) {
+              return Container(
+                alignment: Alignment.center,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.image_not_supported,
+                        size: 48, color: Colors.grey.shade300),
+                    const SizedBox(height: 8),
+                    Text(
+                      '画像が見つかりません',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey.shade500,
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
+
+          // Lvバッジ（右下）
+          Positioned(
+            bottom: 12,
+            right: 12,
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+              decoration: BoxDecoration(
+                color: Colors.deepOrange,
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withAlpha(25),
+                    blurRadius: 4,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Text(
+                'Lv. $level',
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   void dispose() {
+    ref.read(ttsProvider.notifier).stop();
     _feedbackCtrl.dispose();
     _ghostTimer?.cancel();
     super.dispose();
@@ -115,6 +227,7 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
 
   void _onChoiceTap(int index) {
     if (_answered) return;
+    ref.read(ttsProvider.notifier).stop();
     final ms = DateTime.now().difference(_questionStartTime).inMilliseconds;
     _questionTimingsMs.add(ms);
     setState(() {
@@ -133,6 +246,7 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
   }
 
   void _onNext() {
+    ref.read(ttsProvider.notifier).stop();
     if (_currentIndex < widget.stage.questions.length - 1) {
       setState(() {
         _currentIndex++;
@@ -177,6 +291,11 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
     final progress = (_currentIndex + (_answered ? 1 : 0)) / total;
     final adaptive = ref.watch(adaptiveProvider);
     final shouldShowHint = adaptive.shouldShowHint(widget.stage.topicType);
+    final tts = ref.watch(ttsProvider);
+
+    // キャラクターレベルを取得
+    final sansuProfile = ref.watch(sansuProfileProvider);
+    final characterLevel = sansuProfile.getCharacterLevel(_displayCharacterId);
 
     return Scaffold(
       appBar: AppBar(
@@ -253,6 +372,13 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  // ─── キャラクター画像（Lv対応） ────────────────
+                  _buildCharacterImage(
+                    characterId: _displayCharacterId,
+                    level: characterLevel,
+                  ),
+                  const SizedBox(height: 16),
+
                   // ─── ヒント ────────────────────────────────────
                   if (_showHint && _current.hint != null)
                     Container(
@@ -292,18 +418,78 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                             offset: const Offset(0, 4)),
                       ],
                     ),
-                    child: Text(
-                      _applyPlaceholders(_current.question),
-                      style: const TextStyle(
-                        fontSize: 26,
-                        fontWeight: FontWeight.bold,
-                        color: kTextDark,
-                        height: 1.5,
-                      ),
-                      textAlign: TextAlign.center,
+                    child: Column(
+                      children: [
+                        Text(
+                          _applyPlaceholders(_current.question),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            color: kTextDark,
+                            height: 1.5,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 8),
+                        GestureDetector(
+                          onTap: () {
+                            if (tts.isSpeaking) {
+                              ref.read(ttsProvider.notifier).stop();
+                            } else {
+                              ref.read(ttsProvider.notifier).speak(
+                                    _applyPlaceholders(_current.question),
+                                  );
+                            }
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: tts.isSpeaking
+                                  ? kPrimaryColor.withAlpha(30)
+                                  : Colors.grey.shade100,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: tts.isSpeaking
+                                    ? kPrimaryColor
+                                    : Colors.grey.shade300,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  tts.isSpeaking
+                                      ? Icons.volume_up
+                                      : Icons.volume_up_outlined,
+                                  size: 18,
+                                  color: tts.isSpeaking
+                                      ? kPrimaryColor
+                                      : Colors.grey.shade600,
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  tts.isSpeaking ? '再生中...' : '読み上げ',
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    color: tts.isSpeaking
+                                        ? kPrimaryColor
+                                        : Colors.grey.shade600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // ─── 図形ビジュアル（回答後に表示） ──────────────────
+                  if (_answered && _current.shapeName != null)
+                    GeometryVisualWidget(shapeName: _current.shapeName!),
 
                   // ─── 計算過程（ヒント） ───────────────────────────
                   CalculationStepsWidget(
