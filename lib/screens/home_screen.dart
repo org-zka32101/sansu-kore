@@ -434,7 +434,7 @@ class _RecentBadgesSection extends StatelessWidget {
               Text('バッジ', style: Theme.of(context).textTheme.headlineSmall),
               const Spacer(),
               TextButton(
-                onPressed: () => Navigator.of(context).pushNamed('/characters'),
+                onPressed: () => Navigator.of(context).pushNamed('/badge-collection'),
                 child: const Text('すべて見る'),
               ),
             ],

@@ -2,7 +2,7 @@ name: sansu_kore
 description: "算数コレ！- たし算からかんすうまで"
 publish_to: 'none'
 
-version: 2.3.0+8
+version: 3.1.0+13
 
 environment:
   sdk: ^3.11.5
@@ -38,14 +38,20 @@ dev_dependencies:
 flutter_launcher_icons:
   android: true
   ios: true
-  image_path: "assets/icons/app_icon.png"
+  image_path: "assets/app_icon/app_icon.png"
   min_sdk_android: 21
-  adaptive_icon_background: "#E74C3C"
-  adaptive_icon_foreground: "assets/icons/app_icon.png"
+  adaptive_icon_background: "#FFFFFF"
+  adaptive_icon_foreground: "assets/app_icon/app_icon.png"
 
 flutter:
   uses-material-design: true
 
   assets:
+    - assets/app_icon/
+    - assets/avatars/
     - assets/icons/
     - assets/legal/
+    - assets/characters/tier1/
+    - assets/characters/tier2/
+    - assets/characters/tier3/
+    - assets/characters/tier4/

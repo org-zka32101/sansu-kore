@@ -8,6 +8,7 @@ import 'firebase_options.dart';
 import 'models/quest_model.dart';
 import 'providers/character_provider.dart';
 import 'screens/character_screen.dart';
+import 'screens/badge_collection_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/daily_bonus_screen.dart';
 import 'screens/weekly_challenge_screen.dart';
@@ -70,6 +71,7 @@ class SansuKoreApp extends ConsumerWidget {
         '/home': (context) => const RootShell(),
         '/stages': (context) => const StageSelectScreen(),
         '/characters': (context) => const CharacterScreen(),
+        '/badge-collection': (context) => const BadgeCollectionScreen(),
         '/settings': (context) => const SettingsScreen(),
         '/upgrade': (context) => const UpgradeScreen(),
         '/privacy': (context) => const PrivacyPolicyScreen(),
