@@ -17,6 +17,7 @@ import 'screens/invite_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/math_guide_screen.dart';
 import 'screens/onboarding_screen.dart';
+import 'screens/org_splash_screen.dart';
 import 'screens/privacy_policy_screen.dart';
 import 'screens/profile_selection_screen.dart';
 import 'screens/quest_screen.dart';
@@ -65,7 +66,8 @@ class SansuKoreApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       initialRoute: '/',
       routes: {
-        '/': (context) => const SplashScreen(),
+        '/': (context) => const OrgSplashScreen(),
+        '/app-splash': (context) => const SplashScreen(),
         '/onboarding': (context) => const OnboardingScreen(),
         '/profile-selection': (context) => const ProfileSelectionScreen(),
         '/home': (context) => const RootShell(),

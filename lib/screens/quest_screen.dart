@@ -325,7 +325,8 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
           ),
         ),
       ),
-      body: Column(
+      body: SafeArea(
+        child: Column(
         children: [
           // ─── 進捗バー（ゴーストバトル対応） ──────────────────────
           _ProgressSection(
@@ -628,6 +629,7 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
             ),
           ),
         ],
+        ),
       ),
     );
   }
