@@ -3,8 +3,11 @@ import 'package:shared_core/shared_core.dart';
 import '../data/sansu_characters.dart';
 
 // ── 算数コレ 交換所アイテム ──────────────────────────────────────────────
+// 2026-07: 交換所・期間限定タブはいったん非表示（ラインナップ見直し中）。
+// 復活する際は _exchangeItems / _seasonalItems をそのまま CoinShopPage に渡す。
 
-const _exchangeItems = [
+// ignore: unused_element
+const _exchangeItemsArchive = [
   AppShopItem(id: 'hat_number',    emoji: '🔢', name: '数字帽子',
       description: 'キャラに数字の帽子をかぶせる', category: '帽子', coinCost: 80),
   AppShopItem(id: 'hat_abacus',    emoji: '🧮', name: 'そろばん帽',
@@ -33,7 +36,8 @@ const _exchangeItems = [
 
 // ── 算数コレ 期間限定アイテム ─────────────────────────────────────────────
 
-const _seasonalItems = <String, List<AppShopItem>>{
+// ignore: unused_element
+const _seasonalItemsArchive = <String, List<AppShopItem>>{
   'spring': [
     AppShopItem(id: 'bg_spring_math', emoji: '🌸', name: '春の数式背景',
         description: '桜と数式が舞う春の背景', category: '期間限定', coinCost: 300),
@@ -81,8 +85,8 @@ class ShopScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return CoinShopPage(
       characters: kSansuCharacters,
-      exchangeItems: _exchangeItems,
-      seasonalItems: _seasonalItems,
+      exchangeItems: const [],
+      seasonalItems: const {},
     );
   }
 }

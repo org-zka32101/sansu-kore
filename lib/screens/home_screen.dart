@@ -69,18 +69,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                 ),
               ),
-              titlePadding: const EdgeInsets.only(bottom: 14),
-              title: Center(
+              titlePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              centerTitle: true,
+              title: FittedBox(
+                fit: BoxFit.scaleDown,
                 child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                   const Text(
                     '🔴 算数コレ！',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white, fontSize: 18),
                   ),
                   if (currentProfile != null)
                     Text(
                       '${currentProfile.name} (${currentProfile.grade}年生)',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: const TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                 ],

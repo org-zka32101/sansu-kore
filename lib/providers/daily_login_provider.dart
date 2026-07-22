@@ -7,13 +7,14 @@ const _totalLoginDaysKey = 'daily_total_login_days';
 const _todayClaimedKey = 'daily_today_claimed';
 
 // デイリーボーナス報酬定義（7日サイクル）
+// 国語コレ（shared_core の calcDailyBonus）と同じ報酬額に統一
 const List<DailyReward> kDailyRewards = [
-  DailyReward(day: 1, coins: 10, label: 'コイン10枚'),
-  DailyReward(day: 2, coins: 15, label: 'コイン15枚'),
-  DailyReward(day: 3, coins: 20, label: 'コイン20枚'),
-  DailyReward(day: 4, coins: 25, label: 'コイン25枚'),
-  DailyReward(day: 5, coins: 30, label: 'コイン30枚'),
-  DailyReward(day: 6, coins: 40, label: 'コイン40枚'),
+  DailyReward(day: 1, coins: 5, label: 'コイン5枚'),
+  DailyReward(day: 2, coins: 10, label: 'コイン10枚'),
+  DailyReward(day: 3, coins: 15, label: 'コイン15枚'),
+  DailyReward(day: 4, coins: 15, label: 'コイン15枚'),
+  DailyReward(day: 5, coins: 20, label: 'コイン20枚'),
+  DailyReward(day: 6, coins: 20, label: 'コイン20枚'),
   DailyReward(day: 7, coins: 50, label: 'ウィークリーボックス！', isSpecial: true),
 ];
 
