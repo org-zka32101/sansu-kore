@@ -1,24 +1,44 @@
-name: Build APK & iOS
+name: Flutter CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [ master ]
   pull_request:
-    branches: [ main ]
+    branches: [ master ]
+  workflow_dispatch:
 
 jobs:
-  build-android:
+  test:
+    name: Analyze & Test
     runs-on: ubuntu-latest
-
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
+    - uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.0'
+        flutter-version: '3.44.0'
+        channel: 'stable'
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Analyze
+      run: flutter analyze
+
+  build-android:
+    name: Build Android APK & AAB
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.44.0'
         channel: 'stable'
 
     - name: Install dependencies
@@ -31,14 +51,14 @@ jobs:
       run: flutter build appbundle --release
 
     - name: Upload APK to Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sansu-kore-apk
         path: build/app/outputs/flutter-apk/app-release.apk
         retention-days: 30
 
     - name: Upload AAB to Artifacts
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: sansu-kore-aab
         path: build/app/outputs/bundle/release/app-release.aab
@@ -55,33 +75,96 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   build-ios:
+    name: Build iOS (unsigned)
     runs-on: macos-latest
-
+    needs: test
+    # macOSランナーはLinuxの10倍のActions分数を消費するため、通常のpushでは実行しない。
+    # PR時、または手動実行（Actionsタブ → Run workflow）でのみ起動する。
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
       with:
         submodules: recursive
 
-    - name: Set up Flutter
-      uses: subosito/flutter-action@v2
+    - uses: subosito/flutter-action@v2
       with:
-        flutter-version: '3.24.0'
+        flutter-version: '3.44.0'
         channel: 'stable'
 
     - name: Install dependencies
       run: flutter pub get
 
-    - name: Build iOS (unsigned)
+    # GoogleService-Info.plist未登録のため現時点ではFirebase iOS機能は動作しないが、
+    # コード署名なしのコンパイル検証（Podfile/Xcodeプロジェクト設定の妥当性確認）は可能。
+    - name: Build iOS (no codesign)
       run: flutter build ios --release --no-codesign
 
-    - name: Archive iOS build output
-      run: |
-        mkdir -p ios_build_output
-        cp -r build/ios/iphoneos/Runner.app ios_build_output/ || true
-
-    - name: Upload iOS build to Artifacts
-      uses: actions/upload-artifact@v3
+    - name: Upload build output
+      uses: actions/upload-artifact@v4
       with:
         name: sansu-kore-ios-unsigned
-        path: ios_build_output
+        path: build/ios/iphoneos/Runner.app
         retention-days: 30
+
+  build-ios-signed:
+    name: Build & Upload Signed iOS (TestFlight)
+    runs-on: macos-latest
+    needs: test
+    # 最もコストの高いジョブ。署名証明書・プロビジョニングプロファイル・
+    # App Store Connect APIキーがGitHub Secretsに登録されるまでは失敗する（想定内）。
+    # Apple Developer Program登録・ios/ExportOptions.plist作成後に有効化する。
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        submodules: recursive
+
+    - uses: subosito/flutter-action@v2
+      with:
+        flutter-version: '3.44.0'
+        channel: 'stable'
+
+    - name: Install dependencies
+      run: flutter pub get
+
+    - name: Import signing certificate
+      env:
+        P12_BASE64: ${{ secrets.IOS_DIST_CERT_BASE64 }}
+        P12_PASSWORD: ${{ secrets.IOS_DIST_CERT_PASSWORD }}
+        KEYCHAIN_PASSWORD: temporary-ci-keychain-password
+      run: |
+        echo "$P12_BASE64" | base64 --decode > certificate.p12
+        security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security default-keychain -s build.keychain
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+        security set-keychain-settings -t 3600 -u build.keychain
+        security import certificate.p12 -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+        security list-keychains -d user -s build.keychain login.keychain
+        rm certificate.p12
+
+    - name: Install provisioning profile
+      env:
+        PROFILE_BASE64: ${{ secrets.IOS_PROVISION_PROFILE_BASE64 }}
+      run: |
+        mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+        echo "$PROFILE_BASE64" | base64 --decode > ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+
+    - name: Install App Store Connect API key
+      env:
+        API_KEY_BASE64: ${{ secrets.APP_STORE_CONNECT_API_KEY_BASE64 }}
+        KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+      run: |
+        mkdir -p ~/.appstoreconnect/private_keys
+        echo "$API_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
+
+    - name: Build signed IPA
+      run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
+
+    - name: Upload to App Store Connect (TestFlight)
+      env:
+        KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+        ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+      run: |
+        xcrun altool --upload-app -f build/ios/ipa/*.ipa -t ios \
+          --apiKey "$KEY_ID" --apiIssuer "$ISSUER_ID"
