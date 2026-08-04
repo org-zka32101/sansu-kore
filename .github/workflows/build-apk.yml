@@ -6,6 +6,11 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
+    inputs:
+      run_signed_build:
+        description: '署名付きiOSビルド(build-ios-signed)も実行する（Secrets未設定の間はfalseのまま）'
+        type: boolean
+        default: false
 
 jobs:
   test:
@@ -113,7 +118,8 @@ jobs:
     # 最もコストの高いジョブ。署名証明書・プロビジョニングプロファイル・
     # App Store Connect APIキーがGitHub Secretsに登録されるまでは失敗する（想定内）。
     # Apple Developer Program登録・ios/ExportOptions.plist作成後に有効化する。
-    if: github.event_name == 'workflow_dispatch'
+    # run_signed_build を明示的に true にした手動実行時のみ起動（誤って毎回起動しないよう分離）。
+    if: github.event_name == 'workflow_dispatch' && inputs.run_signed_build == true
     steps:
     - uses: actions/checkout@v4
       with:
