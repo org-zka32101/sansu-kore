@@ -529,35 +529,78 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                         scale: isSelected && _answered
                             ? _feedbackAnim
                             : const AlwaysStoppedAnimation(1.0),
-                        child: GestureDetector(
-                          onTap: () => _onChoiceTap(i),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 250),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 20, vertical: 16),
-                            decoration: BoxDecoration(
-                              color: bg,
-                              borderRadius: BorderRadius.circular(14),
-                              border:
-                                  Border.all(color: borderColor, width: 2),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withAlpha(8),
-                                  blurRadius: 4,
-                                  offset: const Offset(0, 2),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => _onChoiceTap(i),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  padding: const EdgeInsets.symmetric(
+                                      horizontal: 20, vertical: 16),
+                                  decoration: BoxDecoration(
+                                    color: bg,
+                                    borderRadius: BorderRadius.circular(14),
+                                    border:
+                                        Border.all(color: borderColor, width: 2),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.black.withAlpha(8),
+                                        blurRadius: 4,
+                                        offset: const Offset(0, 2),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Text(
+                                    _current.choices[i],
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: FontWeight.bold,
+                                      color: textColor,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                  ),
                                 ),
-                              ],
-                            ),
-                            child: Text(
-                              _current.choices[i],
-                              style: TextStyle(
-                                fontSize: 20,
-                                fontWeight: FontWeight.bold,
-                                color: textColor,
                               ),
-                              textAlign: TextAlign.center,
                             ),
-                          ),
+                            const SizedBox(width: 8),
+                            // ─── 選択肢読み上げボタン ─────────────────
+                            GestureDetector(
+                              onTap: () {
+                                if (tts.isSpeaking) {
+                                  ref.read(ttsProvider.notifier).stop();
+                                } else {
+                                  ref.read(ttsProvider.notifier).speak(
+                                        _current.choices[i],
+                                      );
+                                }
+                              },
+                              child: AnimatedContainer(
+                                duration: const Duration(milliseconds: 200),
+                                padding: const EdgeInsets.all(10),
+                                decoration: BoxDecoration(
+                                  color: tts.isSpeaking
+                                      ? kPrimaryColor.withAlpha(30)
+                                      : Colors.grey.shade100,
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(
+                                    color: tts.isSpeaking
+                                        ? kPrimaryColor
+                                        : Colors.grey.shade300,
+                                  ),
+                                ),
+                                child: Icon(
+                                  tts.isSpeaking
+                                      ? Icons.volume_up
+                                      : Icons.volume_up_outlined,
+                                  size: 20,
+                                  color: tts.isSpeaking
+                                      ? kPrimaryColor
+                                      : Colors.grey.shade600,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     );

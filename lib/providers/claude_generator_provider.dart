@@ -1,11 +1,12 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../models/quest_model.dart';
 
-const String _apiKey = 'sk-ant-d02300e96c45432686fb87a6ccd40db1df6c5d63e3c5bde4ba1d7e42fbbc2cb7';
-const String _apiUrl = 'https://api.anthropic.com/v1/messages';
+String get _apiKey => dotenv.env['CLAUDE_API_KEY'] ?? '';
+String get _apiUrl => dotenv.env['CLAUDE_API_URL'] ?? 'https://api.anthropic.com/v1/messages';
 
 enum MathGrade { grade1, grade2, grade3, grade4, grade5, grade6 }
 
