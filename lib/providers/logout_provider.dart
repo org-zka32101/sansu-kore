@@ -2,6 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_core/shared_core.dart';
+import 'package:flutter/foundation.dart';
+import 'profile_provider.dart';
+import 'progress_provider.dart';
+import 'coin_provider.dart';
+import 'badge_provider.dart';
+import 'ghost_provider.dart';
+import 'daily_login_provider.dart';
 
 // Firebase Auth Provider
 final firebaseAuthProvider = Provider<FirebaseAuth>((ref) {
@@ -79,13 +86,26 @@ class LogoutNotifier extends StateNotifier<AsyncValue<void>> {
       final auth = FirebaseAuth.instance;
       await auth.signOut();
 
-      // 3. 全Provider をリセット
-      // 注: shared_core から export されているプロバイダーは
-      // 外部で管理されるため、ここではキャッシュクリアで対応
+      // 3. 全Provider をリセット（data 関連プロバイダーをクリア）
+      _ref.invalidate(profileProvider);
+      _ref.invalidate(progressProvider);
+      _ref.invalidate(coinProvider);
+      _ref.invalidate(badgeProvider);
+      _ref.invalidate(ghostProvider);
+      _ref.invalidate(dailyLoginProvider);
+      // shared_core プロバイダーも invalidate
+      try {
+        _ref.invalidate(characterStateProvider);
+      } catch (e) {
+        if (kDebugMode) print('characterStateProvider invalidate: $e');
+      }
+
+      if (kDebugMode) print('✅ ログアウト完了');
 
       state = const AsyncValue.data(null);
       return true;
     } catch (e, st) {
+      if (kDebugMode) print('❌ ログアウト失敗: $e');
       state = AsyncValue.error(e, st);
       return false;
     }

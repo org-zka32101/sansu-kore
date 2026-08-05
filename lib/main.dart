@@ -49,7 +49,11 @@ Future<void> main() async {
       options: DefaultFirebaseOptions.currentPlatform,
     );
     await CrossPromoService.init();
-  } catch (_) {}
+  } catch (e) {
+    if (kDebugMode) {
+      print('❌ Firebase init error: $e');
+    }
+  }
 
   runApp(ProviderScope(
     overrides: [

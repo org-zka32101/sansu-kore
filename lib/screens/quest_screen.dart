@@ -9,6 +9,7 @@ import '../providers/sansu_profile_provider.dart';
 import '../providers/character_level_provider.dart';
 import '../theme/app_theme.dart';
 import '../providers/tts_provider.dart';
+import '../providers/tts_provider.dart' as tts_enums show TtsSource;
 import '../widgets/furigana_text.dart';
 import '../widgets/calculation_steps_widget.dart';
 import '../widgets/geometry_visual_widget.dart';
@@ -62,9 +63,11 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
 
   // プレースホルダー置換（②主人公文章題）
   String _applyPlaceholders(String text) {
+    final name = _playerName.isEmpty ? 'きみ' : _playerName;
+    final item = _favoriteItem.isEmpty ? 'りんご' : _favoriteItem;
     return text
-        .replaceAll('{name}', _playerName)
-        .replaceAll('{item}', _favoriteItem);
+        .replaceAll('{name}', name)
+        .replaceAll('{item}', item);
   }
 
   @override
@@ -93,12 +96,14 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
       setState(() => _ghostRecord = record);
       // 100ms ごとにゴーストの位置を更新
       _ghostTimer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-        if (mounted) {
-          setState(() {
-            _ghostElapsedMs =
-                DateTime.now().difference(_startTime).inMilliseconds;
-          });
+        if (!mounted) {
+          _ghostTimer?.cancel();
+          return;
         }
+        setState(() {
+          _ghostElapsedMs =
+              DateTime.now().difference(_startTime).inMilliseconds;
+        });
       });
     }
   }
@@ -434,11 +439,12 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                         const SizedBox(height: 8),
                         GestureDetector(
                           onTap: () {
-                            if (tts.isSpeaking) {
+                            if (tts.isSpeaking && tts.currentSource == TtsSource.question) {
                               ref.read(ttsProvider.notifier).stop();
                             } else {
                               ref.read(ttsProvider.notifier).speak(
                                     _applyPlaceholders(_current.question),
+                                    source: TtsSource.question,
                                   );
                             }
                           },
@@ -567,11 +573,12 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                             // ─── 選択肢読み上げボタン ─────────────────
                             GestureDetector(
                               onTap: () {
-                                if (tts.isSpeaking) {
+                                if (tts.isSpeaking && tts.currentSource == TtsSource.choice) {
                                   ref.read(ttsProvider.notifier).stop();
                                 } else {
                                   ref.read(ttsProvider.notifier).speak(
                                         _current.choices[i],
+                                        source: TtsSource.choice,
                                       );
                                 }
                               },

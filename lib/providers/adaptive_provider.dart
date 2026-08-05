@@ -120,7 +120,11 @@ class AdaptiveState {
 
 class AdaptiveNotifier extends Notifier<AdaptiveState> {
   @override
-  AdaptiveState build() => const AdaptiveState(topicAccuracies: {});
+  AdaptiveState build() {
+    // 初期化時に非同期で load() を実行
+    load();
+    return const AdaptiveState(topicAccuracies: {});
+  }
 
   Future<void> load() async {
     final prefs = await SharedPreferences.getInstance();

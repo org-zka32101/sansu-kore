@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'firestore_provider.dart';
@@ -88,9 +89,16 @@ class GhostNotifier extends Notifier<GhostState> {
       // 2. Firestoreから同期（バックグラウンド）
       final userId = FirebaseAuth.instance.currentUser?.uid;
       if (userId != null) {
-        _syncFromFirestore(userId);
+        try {
+          await _syncFromFirestore(userId);
+        } catch (e) {
+          if (kDebugMode) print('Ghost sync error: $e');
+          // 同期失敗時は local data で続行
+        }
       }
-    } catch (_) {}
+    } catch (e) {
+      if (kDebugMode) print('Ghost init error: $e');
+    }
   }
 
   Future<void> _loadLocal() async {

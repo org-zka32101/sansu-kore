@@ -90,6 +90,22 @@ class SettingsScreen extends ConsumerWidget {
             FutureBuilder<List<PraiseMessage>>(
               future: NotificationService.getPraiseQueue(),
               builder: (context, snapshot) {
+                if (snapshot.hasError) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Text('読み込みエラー: ${snapshot.error}',
+                      style: const TextStyle(color: Colors.red, fontSize: 12)),
+                  );
+                }
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8),
+                    child: SizedBox(
+                      height: 40,
+                      child: Center(child: CircularProgressIndicator()),
+                    ),
+                  );
+                }
                 final messages = snapshot.data ?? [];
                 if (messages.isEmpty) {
                   return const Padding(
@@ -197,11 +213,25 @@ class SettingsScreen extends ConsumerWidget {
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      onPressed: () {
-                        if (tts.isSpeaking) {
-                          ref.read(ttsProvider.notifier).stop();
+                      onPressed: () async {
+                        if (tts.isSpeaking && tts.currentSource == TtsSource.question) {
+                          await ref.read(ttsProvider.notifier).stop();
                         } else {
-                          ref.read(ttsProvider.notifier).speak('これはテストです。音声の調子をお確かめください。');
+                          try {
+                            await ref.read(ttsProvider.notifier).speak(
+                              'これはテストです。音声の調子をお確かめください。',
+                              source: TtsSource.question,
+                            ).timeout(
+                              const Duration(seconds: 5),
+                              onTimeout: () => throw Exception('音声再生がタイムアウトしました'),
+                            );
+                          } catch (e) {
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('エラー: $e')),
+                              );
+                            }
+                          }
                         }
                       },
                       icon: Icon(
