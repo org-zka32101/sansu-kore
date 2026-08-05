@@ -45,7 +45,7 @@ class TtsNotifier extends Notifier<TtsState> {
     ref.onDispose(() async {
       try {
         await _tts.stop();
-        await _tts.release();
+        // flutter_tts v4.2.5 には release() メソッドがないため、stop() のみ
       } catch (e) {
         if (kDebugMode) print('TTS cleanup error: $e');
       }
