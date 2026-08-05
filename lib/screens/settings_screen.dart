@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_core/shared_core.dart' show CrossPromoSection;
 import '../providers/profile_provider.dart';
 import '../providers/progress_provider.dart';
 import '../providers/premium_provider.dart';
@@ -7,6 +8,7 @@ import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/logout_provider.dart';
 import '../providers/sansu_profile_provider.dart';
+import '../providers/tts_provider.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -19,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
     final premium = ref.watch(premiumProvider);
     final daily = ref.watch(dailyLoginProvider);
     final sansuProfile = ref.watch(sansuProfileProvider);
+    final tts = ref.watch(ttsProvider);
 
     return Scaffold(
       appBar: AppBar(
@@ -128,6 +131,100 @@ class SettingsScreen extends ConsumerWidget {
 
             const SizedBox(height: 16),
 
+            // 🎤 音声読み上げ設定（TTS）
+            _SectionHeader('🎤 音声読み上げ'),
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.grey.shade200),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // 音量スライダー
+                  Row(
+                    children: [
+                      const Icon(Icons.volume_down, size: 20, color: kTextMuted),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Slider(
+                          value: tts.volume,
+                          onChanged: (val) => ref.read(ttsProvider.notifier).setVolume(val),
+                          min: 0,
+                          max: 1,
+                          activeColor: kPrimaryColor,
+                          inactiveColor: Colors.grey.shade300,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(Icons.volume_up, size: 20, color: kPrimaryColor),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${(tts.volume * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // 速度スライダー
+                  Row(
+                    children: [
+                      const Icon(Icons.speed, size: 20, color: kTextMuted),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Slider(
+                          value: tts.rate,
+                          onChanged: (val) => ref.read(ttsProvider.notifier).setRate(val),
+                          min: 0,
+                          max: 1,
+                          activeColor: kPrimaryColor,
+                          inactiveColor: Colors.grey.shade300,
+                          divisions: 10,
+                          label: tts.rate < 0.5 ? 'ゆっくり' : tts.rate < 0.8 ? '通常' : '速い',
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${(tts.rate * 100).toStringAsFixed(0)}%',
+                        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  // テスト読み上げボタン
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        if (tts.isSpeaking) {
+                          ref.read(ttsProvider.notifier).stop();
+                        } else {
+                          ref.read(ttsProvider.notifier).speak('これはテストです。音声の調子をお確かめください。');
+                        }
+                      },
+                      icon: Icon(
+                        tts.isSpeaking ? Icons.stop : Icons.play_arrow,
+                        size: 20,
+                      ),
+                      label: Text(
+                        tts.isSpeaking ? '再生停止' : 'テスト再生',
+                        style: const TextStyle(fontSize: 14),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kPrimaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 12),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
             // その他
             _SectionHeader('その他'),
             _SettingCard(
@@ -163,6 +260,11 @@ class SettingsScreen extends ConsumerWidget {
               title: 'ログアウト',
               subtitle: '別のプロフィールに切り替える',
               onTap: () => _showLogoutDialog(context, ref),
+            ),
+
+            const CrossPromoSection(
+              currentAppId: 'com.petitworksapps.shougakukore.sansu',
+              currentCategory: '小学コレ',
             ),
 
             const SizedBox(height: 24),
