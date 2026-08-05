@@ -46,6 +46,18 @@ class QuizQuestion {
     // 新しい correctIndex を計算
     final newCorrectIndex = shuffledChoices.indexOf(correctAnswer);
 
+    // ⚠️ wrongHints マッピング修正: シャッフル後の新しいインデックスで再マップ
+    Map<String, String>? remappedWrongHints;
+    if (wrongHints != null) {
+      remappedWrongHints = {};
+      for (int i = 0; i < shuffledChoices.length; i++) {
+        final choiceText = shuffledChoices[i];
+        if (wrongHints!.containsKey(choiceText)) {
+          remappedWrongHints[choiceText] = wrongHints![choiceText]!;
+        }
+      }
+    }
+
     // 新しい QuizQuestion を返す
     return QuizQuestion(
       id: id,
@@ -56,7 +68,7 @@ class QuizQuestion {
       correctIndex: newCorrectIndex,
       explanation: explanation,
       hint: hint,
-      wrongHints: wrongHints,
+      wrongHints: remappedWrongHints,
       shapeName: shapeName,
     );
   }

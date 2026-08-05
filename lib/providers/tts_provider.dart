@@ -3,18 +3,21 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 enum TtsLanguage { japanese, english }
+enum TtsSource { question, choice }
 
 class TtsState {
   final bool isInitialized;
   final bool isSpeaking;
   final double volume;
   final double rate;
+  final TtsSource? currentSource;  // どのボタンが再生中か
 
   const TtsState({
     this.isInitialized = false,
     this.isSpeaking = false,
     this.volume = 1.0,
     this.rate = 0.8,
+    this.currentSource,
   });
 
   TtsState copyWith({
@@ -22,12 +25,14 @@ class TtsState {
     bool? isSpeaking,
     double? volume,
     double? rate,
+    TtsSource? currentSource,
   }) =>
       TtsState(
         isInitialized: isInitialized ?? this.isInitialized,
         isSpeaking: isSpeaking ?? this.isSpeaking,
         volume: volume ?? this.volume,
         rate: rate ?? this.rate,
+        currentSource: currentSource ?? this.currentSource,
       );
 }
 
@@ -37,7 +42,14 @@ class TtsNotifier extends Notifier<TtsState> {
   @override
   TtsState build() {
     _init();
-    ref.onDispose(() => _tts.stop());
+    ref.onDispose(() async {
+      try {
+        await _tts.stop();
+        await _tts.release();
+      } catch (e) {
+        if (kDebugMode) print('TTS cleanup error: $e');
+      }
+    });
     return const TtsState();
   }
 
@@ -69,10 +81,16 @@ class TtsNotifier extends Notifier<TtsState> {
     }
   }
 
-  /// テキストを音声で読み上げ
-  Future<void> speak(String text) async {
+  /// テキストを音声で読み上げ（source追跡対応）
+  Future<void> speak(String text, {TtsSource source = TtsSource.question}) async {
     if (!state.isInitialized || text.isEmpty) return;
     try {
+      // 別の source が再生中なら停止
+      if (state.isSpeaking && state.currentSource != source) {
+        await _tts.stop();
+      }
+
+      state = state.copyWith(currentSource: source);
       await _tts.speak(text);
     } catch (e) {
       if (kDebugMode) print('TTS speak error: $e');

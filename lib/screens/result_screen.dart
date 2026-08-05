@@ -33,7 +33,19 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   void initState() {
     super.initState();
     _confetti = ConfettiController(duration: const Duration(seconds: 3));
-    _saveResult();
+    _saveResult().then((_) {
+      if (mounted) {
+        setState(() => _saving = false);
+        _confetti.play();
+      }
+    }).catchError((e) {
+      if (mounted) {
+        setState(() => _saving = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('保存エラー: $e')),
+        );
+      }
+    });
   }
 
   Future<void> _saveResult() async {

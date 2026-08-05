@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final firestoreProvider = Provider((ref) => FirebaseFirestore.instance);
@@ -39,10 +40,15 @@ class UserProfileSync {
 
   static Future<void> updateProfile(String userId, Map<String, dynamic> updates) async {
     final firestore = FirebaseFirestore.instance;
-    await firestore.collection('users').doc(userId).update({
-      'profile': FieldValue.arrayUnion([updates]),
-      'profile.updatedAt': FieldValue.serverTimestamp(),
-    });
+    try {
+      final updateData = {...updates, 'updatedAt': FieldValue.serverTimestamp()};
+      await firestore.collection('users').doc(userId).update({
+        'profile': updateData,
+      });
+    } catch (e) {
+      if (kDebugMode) print('Firestore updateProfile error: $e');
+      rethrow;
+    }
   }
 }
 
@@ -70,14 +76,16 @@ class ProgressSync {
 
   static Future<Map<int, Map<String, dynamic>>> loadAllProgress(String userId) async {
     final firestore = FirebaseFirestore.instance;
-    final snap = await firestore
-        .collection('users')
-        .doc(userId)
-        .collection('progress')
-        .get();
+    try {
+      final snap = await firestore
+          .collection('users')
+          .doc(userId)
+          .collection('progress')
+          .get()
+          .timeout(const Duration(seconds: 10), onTimeout: () => throw Exception('Firestore timeout'));
 
-    return {
-      for (final doc in snap.docs)
+      return {
+        for (final doc in snap.docs)
         int.parse(doc.id): doc.data(),
     };
   }
