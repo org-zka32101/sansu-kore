@@ -86,8 +86,12 @@ class ProgressSync {
 
       return {
         for (final doc in snap.docs)
-        int.parse(doc.id): doc.data(),
-    };
+          int.parse(doc.id): doc.data(),
+      };
+    } catch (e) {
+      if (kDebugMode) print('Firestore loadAllProgress error: $e');
+      return {};
+    }
   }
 }
 
