@@ -50,3 +50,12 @@ Thumbs.db
 
 *.apk
 *.aab
+
+# Firebase configuration (DO NOT COMMIT)
+google-services.json
+GoogleService-Info.plist
+.firebaserc
+*.mobileprovision
+*.p8
+*.p12
+*.jks
