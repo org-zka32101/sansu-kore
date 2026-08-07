@@ -60,7 +60,7 @@ class _OrgSplashScreenState extends State<OrgSplashScreen>
               ),
               const SizedBox(height: 16),
               const Text(
-                'Petit Works Apps',
+                'Your Wish',
                 style: TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w600,

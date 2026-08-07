@@ -1,7 +1,7 @@
 # Firestore セキュリティルール設定
 
 **バージョン**: v1.0  
-**プロジェクト**: petit-works-education  
+**プロジェクト**: your-wish-education  
 **更新日**: 2026-06-23
 
 ---
@@ -44,8 +44,8 @@ gameEvents/{doc}     → 全員読み（CF書き込み）
 1. **Firebase Console にログイン**
    ```
    https://console.firebase.google.com/
-   メール: petitworksdev@gmail.com
-   プロジェクト: petit-works-education
+   メール: yourwishdev@gmail.com
+   プロジェクト: your-wish-education
    ```
 
 2. **Firestore Database を選択**
@@ -74,14 +74,14 @@ gameEvents/{doc}     → 全員読み（CF書き込み）
 2. **ログイン**
    ```bash
    firebase login
-   # ブラウザで petitworksdev@gmail.com でログイン
+   # ブラウザで yourwishdev@gmail.com でログイン
    ```
 
 3. **プロジェクトを初期化**
    ```bash
    cd H:/マイドライブ/apps/sansu-kore
    firebase init firestore
-   # プロジェクト選択: petit-works-education
+   # プロジェクト選択: your-wish-education
    ```
 
 4. **ルールをデプロイ**

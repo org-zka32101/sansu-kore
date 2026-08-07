@@ -158,8 +158,8 @@
   - [ ] artifact 生成確認
 
 - [ ] **firebase/google-services.json**
-  - [ ] petit-works-education プロジェクト ✅
-  - [ ] Package: com.petitworksapps.shougakukore.sansu ✅
+  - [ ] your-wish-education プロジェクト ✅
+  - [ ] Package: com.yourwishapps.shougakukore.sansu ✅
   - [ ] Firebase初期化完了 ✅
 
 ### ドキュメント

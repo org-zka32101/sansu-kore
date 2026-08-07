@@ -39,14 +39,14 @@ Firebase系パッケージ（firebase_core/cloud_firestore等）が新しいXcod
 
 ### A. Firebase Console で iOS アプリを登録（必須）
 
-現在 Firebase プロジェクト `petit-works-education` には
-Android アプリ（`com.petitworksapps.shougakukore.sansu`）のみ登録されており、
+現在 Firebase プロジェクト `your-wish-education` には
+Android アプリ（`com.yourwishapps.shougakukore.sansu`）のみ登録されており、
 iOS アプリの登録がありません。
 
 **手順**:
-1. https://console.firebase.google.com/project/petit-works-education/settings/general
+1. https://console.firebase.google.com/project/your-wish-education/settings/general
 2. 「アプリを追加」→ iOS を選択
-3. バンドルID: `jp.petitworks.SansuKore`
+3. バンドルID: `jp.yourwish.SansuKore`
 4. 「GoogleService-Info.plist」をダウンロード
 5. `H:\マイドライブ\apps\sansu-kore\ios\Runner\GoogleService-Info.plist` に配置
 6. Xcodeで開いてRunnerターゲットに追加する必要があるため、実際にはMacでの一度の作業が必要
@@ -57,7 +57,7 @@ iOS アプリの登録がありません。
 
 - 年会費 $99/年
 - https://developer.apple.com/programs/enroll/
-- 登録後、Bundle ID `jp.petitworks.SansuKore` をApple Developer Portalでも登録
+- 登録後、Bundle ID `jp.yourwish.SansuKore` をApple Developer Portalでも登録
 
 ### C. 実機ビルド・TestFlight配布にはMac実機 or クラウドMacが必要
 

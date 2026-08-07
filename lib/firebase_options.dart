@@ -29,7 +29,7 @@ class DefaultFirebaseOptions {
     apiKey: 'AIzaSyCkIt1e0hN8K3dl7HN2CoH_h95ztkNrgmg',
     appId: '1:216377882454:android:52c82181eb491bb5d108f7',
     messagingSenderId: '216377882454',
-    projectId: 'petit-works-apps-9029a',
-    storageBucket: 'petit-works-apps-9029a.firebasestorage.app',
+    projectId: 'your-wish-apps-9029a',
+    storageBucket: 'your-wish-apps-9029a.firebasestorage.app',
   );
 }

@@ -24,13 +24,13 @@ H:\マイドライブ\apps\sansu-kore\firebase\firestore.rules
 https://console.firebase.google.com/
 ```
 
-ログイン: `petitworksdev@gmail.com`
+ログイン: `yourwishdev@gmail.com`
 
 ---
 
 ### 3️⃣ プロジェクト選択
 
-1. **プロジェクト選択**: `petit-works-education`
+1. **プロジェクト選択**: `your-wish-education`
 2. 左メニュー → **Firestore Database**
 
 ---

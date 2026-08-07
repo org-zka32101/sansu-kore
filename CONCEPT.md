@@ -238,7 +238,7 @@ AI推奨カード（アダプティブラーニング）
 | Firebase Messaging | プッシュ通知 | 設定済み・未実装 |
 | Firestore | データ同期 | 未実装 |
 
-- プロジェクト: `petit-works-apps-9029a`
+- プロジェクト: `your-wish-apps-9029a`
 - App ID: `1:216377882454:android:52c82181eb491bb5d108f7`
 
 ---
@@ -260,7 +260,7 @@ share_plus: ^10.1.4           # シェア機能
 ```
 
 ```
-applicationId: com.petitworksapps.shougakukore.sansu
+applicationId: com.yourwishapps.shougakukore.sansu
 minSdk: 21 (Android 5.0+)
 targetSdk: flutter.targetSdkVersion
 NDK: 28.2.13676358

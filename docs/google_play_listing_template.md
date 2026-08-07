@@ -2,7 +2,7 @@
 
 **アプリ**: 算数コレ！  
 **版**: v3.1-firebase  
-**デベロッパー**: Petit Works Apps  
+**デベロッパー**: Your Wish  
 **公開予定**: 2026年7月～8月
 
 ---
@@ -214,7 +214,7 @@ IARC (日): All ages
 ### プライバシーポリシー URL
 
 ```
-https://petit-works-apps.example.com/privacy
+https://your-wish-apps.example.com/privacy
 ```
 
 ### データ収集

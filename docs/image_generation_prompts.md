@@ -168,7 +168,7 @@ H:\マイドライブ\images\小学コレ！\
 
 ## 🔗 参考リンク
 
-- **デザイン参考**: Petit Works Apps 共通ガイドライン
+- **デザイン参考**: Your Wish 共通ガイドライン
 - **色相**: 小学コレシリーズ統一カラー
   - Primary: #E74C3C (赤)
   - Accent Green: #27AE60

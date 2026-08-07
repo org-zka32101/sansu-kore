@@ -312,7 +312,7 @@ users/
 #### After（統一スキーマ）
 
 ```firestore
-// 統一 Firestore (petit-works-education プロジェクト)
+// 統一 Firestore (your-wish-education プロジェクト)
 
 parents/
 ├ p001/

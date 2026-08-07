@@ -18,7 +18,7 @@
 ### テスト用アカウント
 
 ```
-メール: test@petitworksapps.com
+メール: test@yourwishapps.com
 パスワード: [テスト用]
 ```
 
@@ -94,7 +94,7 @@ adb install sansu-kore-firebase-v3.1.apk
 **Firebase Console で確認**:
 
 1. https://console.firebase.google.com/ を開く
-2. `petit-works-education` プロジェクト
+2. `your-wish-education` プロジェクト
 3. **Firestore Database** → **データ**
 4. `users` コレクション内に、テストユーザーの UID フォルダが作成されているか確認
 5. 以下のドキュメントが存在するか確認：

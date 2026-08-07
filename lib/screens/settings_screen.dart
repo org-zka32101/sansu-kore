@@ -293,7 +293,7 @@ class SettingsScreen extends ConsumerWidget {
             ),
 
             const CrossPromoSection(
-              currentAppId: 'com.petitworksapps.shougakukore.sansu',
+              currentAppId: 'com.yourwishapps.shougakukore.sansu',
               currentCategory: '小学コレ',
             ),
 

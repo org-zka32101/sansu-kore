@@ -1,7 +1,7 @@
 # Firebase アカウント設定
 
 **更新日**: 2026-06-23  
-**統一メール**: `petitworksdev@gmail.com`
+**統一メール**: `yourwishdev@gmail.com`
 
 ---
 
@@ -10,33 +10,33 @@
 ### Firebase Console 設定
 
 - [ ] [Firebase Console](https://console.firebase.google.com) にログイン
-  - メール: `petitworksdev@gmail.com`
+  - メール: `yourwishdev@gmail.com`
   - パスワード: [保管済み]
 
 - [ ] プロジェクト確認
-  - **プロジェクト名**: `petit-works-apps-9029a`
-  - **プロジェクトID**: `petit-works-apps-9029a`
+  - **プロジェクト名**: `your-wish-apps-9029a`
+  - **プロジェクトID**: `your-wish-apps-9029a`
 
 - [ ] プロジェクト設定で確認
-  - **所有者**: `petitworksdev@gmail.com`
+  - **所有者**: `yourwishdev@gmail.com`
   - **メンバー**: 必要に応じて追加
 
 ---
 
 ### google-services.json 設定
 
-**現在の状態**: ✅ `petit-works-apps-9029a` に対応
+**現在の状態**: ✅ `your-wish-apps-9029a` に対応
 
 **確認方法**:
 ```bash
 grep "package_name" android/app/google-services.json
-# 期待値: "com.petitworksapps.shougakukore.sansu"
+# 期待値: "com.yourwishapps.shougakukore.sansu"
 ```
 
 **必要な場合の再ダウンロード**:
 1. Firebase Console → プロジェクト設定
 2. 「アプリを追加」→ Android を選択
-3. `com.petitworksapps.shougakukore.sansu` を入力
+3. `com.yourwishapps.shougakukore.sansu` を入力
 4. google-services.json をダウンロード
 5. `android/app/google-services.json` に上書き
 

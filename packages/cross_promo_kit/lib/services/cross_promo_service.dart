@@ -10,9 +10,9 @@ import '../models/promoted_app.dart';
 ///
 /// 例:
 /// [
-///   {"id":"com.petitworksapps.shougakukore.sansu","name":"算数コレ！","tagline":"...",
+///   {"id":"com.yourwishapps.shougakukore.sansu","name":"算数コレ！","tagline":"...",
 ///    "iconUrl":"...","storeUrl":"...","category":"小学コレ"},
-///   {"id":"com.petitworksapps.nihonryoudodefense","name":"日本領土ディフェンス","tagline":"...",
+///   {"id":"com.yourwishapps.nihonryoudodefense","name":"日本領土ディフェンス","tagline":"...",
 ///    "iconUrl":"...","storeUrl":"...","category":"パズル・ゲーム"}
 /// ]
 const kCrossPromoRemoteConfigKey = 'cross_promo_apps';
