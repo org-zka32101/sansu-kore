@@ -1,5 +1,10 @@
 include: package:flutter_lints/flutter.yaml
 
+analyzer:
+  errors:
+    asset_does_not_exist: ignore
+    asset_directory_does_not_exist: ignore
+
 linter:
   rules:
     prefer_const_constructors: true
