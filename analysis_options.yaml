@@ -4,8 +4,14 @@ analyzer:
   errors:
     asset_does_not_exist: ignore
     asset_directory_does_not_exist: ignore
+  exclude:
+    - "**/*.g.dart"
+    - "**/*.freezed.dart"
 
 linter:
   rules:
-    prefer_const_constructors: true
-    prefer_const_literals_to_create_immutables: true
+    prefer_const_constructors: false
+    prefer_const_literals_to_create_immutables: false
+    prefer_single_quotes: false
+    avoid_print: false
+    unnecessary_imports: false
