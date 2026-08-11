@@ -30,13 +30,13 @@
 **確認方法**:
 ```bash
 grep "package_name" android/app/google-services.json
-# 期待値: "com.petitworksapps.shougakukore.sansu"
+# 期待値: "com.yourwish.shougakukore.sansu"
 ```
 
 **必要な場合の再ダウンロード**:
 1. Firebase Console → プロジェクト設定
 2. 「アプリを追加」→ Android を選択
-3. `com.petitworksapps.shougakukore.sansu` を入力
+3. `com.yourwish.shougakukore.sansu` を入力
 4. google-services.json をダウンロード
 5. `android/app/google-services.json` に上書き
 

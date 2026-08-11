@@ -159,7 +159,7 @@
 
 - [ ] **firebase/google-services.json**
   - [ ] petit-works-education プロジェクト ✅
-  - [ ] Package: com.petitworksapps.shougakukore.sansu ✅
+  - [ ] Package: com.yourwish.shougakukore.sansu ✅
   - [ ] Firebase初期化完了 ✅
 
 ### ドキュメント

@@ -40,7 +40,7 @@ Firebase系パッケージ（firebase_core/cloud_firestore等）が新しいXcod
 ### A. Firebase Console で iOS アプリを登録（必須）
 
 現在 Firebase プロジェクト `petit-works-education` には
-Android アプリ（`com.petitworksapps.shougakukore.sansu`）のみ登録されており、
+Android アプリ（`com.yourwish.shougakukore.sansu`）のみ登録されており、
 iOS アプリの登録がありません。
 
 **手順**:

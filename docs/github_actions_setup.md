@@ -1,7 +1,7 @@
 # GitHub Actions 自動ビルド設定
 
 **リポジトリ**: `sansu-kore` (プライベート)  
-**アカウント**: `petitworksappsdev-hash`  
+**アカウント**: `yourwishdev`  
 **自動化**: main push → APK 自動生成
 
 ---
@@ -12,7 +12,7 @@
 
 1. **GitHub にログイン**
    ```
-   https://github.com/petitworksappsdev-hash
+   https://github.com/yourwishdev
    ```
 
 2. **新規リポジトリを作成**
@@ -34,7 +34,7 @@ cd H:/マイドライブ/apps/sansu-kore
 git remote remove origin
 
 # 新しいリモートを追加
-git remote add origin https://github.com/petitworksappsdev-hash/sansu-kore.git
+git remote add origin https://github.com/yourwishdev/sansu-kore.git
 
 # デフォルトブランチを main に変更
 git branch -M main
@@ -124,7 +124,7 @@ git push origin main
 
 1. **GitHub でリポジトリを開く**
    ```
-   https://github.com/petitworksappsdev-hash/sansu-kore
+   https://github.com/yourwishdev/sansu-kore
    ```
 
 2. **Actions タブをクリック**
@@ -176,7 +176,7 @@ git push origin main
 **git で使用**:
 ```bash
 git push origin main
-# Username: petitworksappsdev-hash
+# Username: yourwishdev
 # Password: [Personal Access Token をペースト]
 ```
 

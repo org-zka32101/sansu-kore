@@ -857,7 +857,7 @@ Image.asset(
 
 **最終更新**: 2026-06-16 v3.2  
 **作成者**: Claude Code (Haiku 4.5)  
-**ライセンス**: Petit Works Apps internal use  
+**ライセンス**: Your Wish internal use  
 **推奨ツール**: Leonardo AI Phoenix 1.0 (Image Guidance機能必須)  
 **対象アプリ**: 算数コレ！(sansu-kore) v3.1+  
 **対象学年**: 小学1-6年生全学年  

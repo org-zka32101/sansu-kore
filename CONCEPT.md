@@ -260,7 +260,7 @@ share_plus: ^10.1.4           # シェア機能
 ```
 
 ```
-applicationId: com.petitworksapps.shougakukore.sansu
+applicationId: com.yourwish.shougakukore.sansu
 minSdk: 21 (Android 5.0+)
 targetSdk: flutter.targetSdkVersion
 NDK: 28.2.13676358
