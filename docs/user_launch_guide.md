@@ -60,7 +60,7 @@
 ```
 【確認】
 1. ブラウザで以下にアクセス:
-   https://github.com/petitworksappsdev-hash/sansu-kore/actions
+   https://github.com/yourwishdev/sansu-kore/actions
 
 2. 画面の「Build APK」を確認:
    ⏳ 黄色い待機中 → 15～20分待機
@@ -84,7 +84,7 @@ Build APK ✅ completed
 ### 2-1. GitHub Actions から APK ダウンロード
 
 ```
-1. https://github.com/petitworksappsdev-hash/sansu-kore/actions
+1. https://github.com/yourwishdev/sansu-kore/actions
    にアクセス
 
 2. リストの「Build APK」（最新）をクリック
@@ -529,10 +529,10 @@ google-services.json のパッケージ名とビルドのパッケージ名が�
 
 解決:
 1. android/app/build.gradle.kts で packageName 確認
-   com.petitworksapps.shougakukore.sansu
+   com.yourwish.shougakukore.sansu
 
 2. google-services.json で同じパッケージ名か確認
-   "package_name": "com.petitworksapps.shougakukore.sansu"
+   "package_name": "com.yourwish.shougakukore.sansu"
 
 3. 一致していなければ google-services.json を再ダウンロード
 ```
@@ -561,7 +561,7 @@ google-services.json のパッケージ名とビルドのパッケージ名が�
 ```
 【Google Play ストア】
 算数コレ！- 小学算数 完全マスター
-https://play.google.com/store/apps/details?id=com.petitworksapps.shougakukore.sansu
+https://play.google.com/store/apps/details?id=com.yourwish.shougakukore.sansu
 
 【ユーザーがインストール開始】
 ✅ 無料ダウンロード

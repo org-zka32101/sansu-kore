@@ -488,5 +488,5 @@ Tier 4: 1キャラ × 8Lv = 8プロンプト
 
 **最終更新**: 2026-06-16 v4.0  
 **作成者**: Claude Code (Haiku 4.5)  
-**ライセンス**: Petit Works Apps internal use  
+**ライセンス**: Your Wish internal use  
 **テンプレート効率化**: 8パターン + 10キャラパラメータで80プロンプト自動生成
