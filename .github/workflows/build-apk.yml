@@ -52,6 +52,11 @@ jobs:
     - name: Clean build cache
       run: flutter clean && flutter pub get
 
+    - name: Create google-services.json from Secret
+      run: |
+        echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+      if: secrets.GOOGLE_SERVICES_JSON != ''
+
     - name: Build APK
       run: flutter build apk --release --no-tree-shake-icons
 
@@ -102,6 +107,11 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Create google-services.json from Secret
+      run: |
+        echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+      if: secrets.GOOGLE_SERVICES_JSON != ''
+
     # GoogleService-Info.plist未登録のため現時点ではFirebase iOS機能は動作しないが、
     # コード署名なしのコンパイル検証（Podfile/Xcodeプロジェクト設定の妥当性確認）は可能。
     - name: Build iOS (no codesign)
@@ -135,6 +145,11 @@ jobs:
 
     - name: Install dependencies
       run: flutter pub get
+
+    - name: Create google-services.json from Secret
+      run: |
+        echo "${{ secrets.GOOGLE_SERVICES_JSON }}" > android/app/google-services.json
+      if: secrets.GOOGLE_SERVICES_JSON != ''
 
     - name: Import signing certificate
       env:
