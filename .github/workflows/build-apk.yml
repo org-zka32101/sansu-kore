@@ -49,6 +49,9 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Clean build cache
+      run: flutter clean && flutter pub get
+
     - name: Build APK
       run: flutter build apk --release --no-tree-shake-icons
 
