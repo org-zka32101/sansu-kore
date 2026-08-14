@@ -1,66 +1,66 @@
-# GitHub Actions 自動ビルド設定
+﻿# GitHub Actions 閾ｪ蜍輔ン繝ｫ繝芽ｨｭ螳・
 
-**リポジトリ**: `sansu-kore` (プライベート)  
-**アカウント**: `yourwishappsdev-hash`  
-**自動化**: main push → APK 自動生成
+**繝ｪ繝昴ず繝医Μ**: `sansu-kore` (繝励Λ繧､繝吶・繝・  
+**繧｢繧ｫ繧ｦ繝ｳ繝・*: `appsdev-hash`  
+**閾ｪ蜍募喧**: main push 竊・APK 閾ｪ蜍慕函謌・
 
 ---
 
-## 📋 セットアップ手順
+## 搭 繧ｻ繝・ヨ繧｢繝・・謇矩・
 
-### Step 1: GitHub でプライベートリポジトリ作成
+### Step 1: GitHub 縺ｧ繝励Λ繧､繝吶・繝医Μ繝昴ず繝医Μ菴懈・
 
-1. **GitHub にログイン**
+1. **GitHub 縺ｫ繝ｭ繧ｰ繧､繝ｳ**
    ```
-   https://github.com/yourwishappsdev-hash
+   https://github.com/appsdev-hash
    ```
 
-2. **新規リポジトリを作成**
-   - ボタン: `New`（右上）
-   - リポジトリ名: `sansu-kore`
-   - 説明: `算数コレ！- Flutter Math Education App`
-   - **Visibility: Private** ✅
-   - Initialize: チェックなし
+2. **譁ｰ隕上Μ繝昴ず繝医Μ繧剃ｽ懈・**
+   - 繝懊ち繝ｳ: `New`・亥承荳奇ｼ・
+   - 繝ｪ繝昴ず繝医Μ蜷・ `sansu-kore`
+   - 隱ｬ譏・ `邂玲焚繧ｳ繝ｬ・・ Flutter Math Education App`
+   - **Visibility: Private** 笨・
+   - Initialize: 繝√ぉ繝・け縺ｪ縺・
    - **Create repository**
 
 ---
 
-### Step 2: ローカルコードを push
+### Step 2: 繝ｭ繝ｼ繧ｫ繝ｫ繧ｳ繝ｼ繝峨ｒ push
 
 ```bash
-cd H:/マイドライブ/apps/sansu-kore
+cd H:/繝槭う繝峨Λ繧､繝・apps/sansu-kore
 
-# リモートの削除
+# 繝ｪ繝｢繝ｼ繝医・蜑企勁
 git remote remove origin
 
-# 新しいリモートを追加
-git remote add origin https://github.com/yourwishappsdev-hash/sansu-kore.git
+# 譁ｰ縺励＞繝ｪ繝｢繝ｼ繝医ｒ霑ｽ蜉
+git remote add origin https://github.com/appsdev-hash/sansu-kore.git
 
-# デフォルトブランチを main に変更
+# 繝・ヵ繧ｩ繝ｫ繝医ヶ繝ｩ繝ｳ繝√ｒ main 縺ｫ螟画峩
 git branch -M main
 
-# 初回 push
+# 蛻晏屓 push
 git push -u origin main
 ```
 
-**ログイン時**:
-- メール: yourwishdev@gmail.com
-- パスワード: [GitHub パスワード]
+**繝ｭ繧ｰ繧､繝ｳ譎・*:
+- 繝｡繝ｼ繝ｫ: dev@gmail.com
+- 繝代せ繝ｯ繝ｼ繝・ [GitHub 繝代せ繝ｯ繝ｼ繝云
 
-または **Personal Access Token** を使用
+縺ｾ縺溘・ **Personal Access Token** 繧剃ｽｿ逕ｨ
 
 ---
 
-### Step 3: GitHub Actions ワークフロー作成
+### Step 3: GitHub Actions 繝ｯ繝ｼ繧ｯ繝輔Ο繝ｼ菴懈・
 
-1. **ローカルで以下ファイルを作成**
+1. **繝ｭ繝ｼ繧ｫ繝ｫ縺ｧ莉･荳九ヵ繧｡繧､繝ｫ繧剃ｽ懈・**
 
-**ファイルパス**:
+**繝輔ぃ繧､繝ｫ繝代せ**:
 ```
-H:\マイドライブ\apps\sansu-kore\.github\workflows\build-apk.yml
+H:\繝槭う繝峨Λ繧､繝暴apps\sansu-kore\.github\workflows\build-apk.yml
 ```
 
-**内容**:
+**蜀・ｮｹ**:
 ```yaml
 name: Build APK
 
@@ -108,10 +108,10 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-2. **git で追加して commit**
+2. **git 縺ｧ霑ｽ蜉縺励※ commit**
 
 ```bash
-cd H:/マイドライブ/apps/sansu-kore
+cd H:/繝槭う繝峨Λ繧､繝・apps/sansu-kore
 
 git add .github/workflows/build-apk.yml
 git commit -m "Add GitHub Actions workflow for APK build"
@@ -120,91 +120,92 @@ git push origin main
 
 ---
 
-### Step 4: 自動ビルド確認
+### Step 4: 閾ｪ蜍輔ン繝ｫ繝臥｢ｺ隱・
 
-1. **GitHub でリポジトリを開く**
+1. **GitHub 縺ｧ繝ｪ繝昴ず繝医Μ繧帝幕縺・*
    ```
-   https://github.com/yourwishappsdev-hash/sansu-kore
+   https://github.com/appsdev-hash/sansu-kore
    ```
 
-2. **Actions タブをクリック**
-   - ワークフローが実行中か確認
-   - ✅ ビルド成功か確認
+2. **Actions 繧ｿ繝悶ｒ繧ｯ繝ｪ繝・け**
+   - 繝ｯ繝ｼ繧ｯ繝輔Ο繝ｼ縺悟ｮ溯｡御ｸｭ縺狗｢ｺ隱・
+   - 笨・繝薙Ν繝画・蜉溘°遒ｺ隱・
 
-3. **アーティファクト確認**
-   - Build 完了 → `Artifacts` → `sansu-kore-apk` ダウンロード
-   - APK がダウンロード可能か確認
+3. **繧｢繝ｼ繝・ぅ繝輔ぃ繧ｯ繝育｢ｺ隱・*
+   - Build 螳御ｺ・竊・`Artifacts` 竊・`sansu-kore-apk` 繝繧ｦ繝ｳ繝ｭ繝ｼ繝・
+   - APK 縺後ム繧ｦ繝ｳ繝ｭ繝ｼ繝牙庄閭ｽ縺狗｢ｺ隱・
 
 ---
 
-## 📦 毎回の更新フロー
+## 逃 豈主屓縺ｮ譖ｴ譁ｰ繝輔Ο繝ｼ
 
-**ローカルで開発** → **commit** → **push to main**
+**繝ｭ繝ｼ繧ｫ繝ｫ縺ｧ髢狗匱** 竊・**commit** 竊・**push to main**
 
 ```bash
-# 修正/追加
+# 菫ｮ豁｣/霑ｽ蜉
 vim lib/screens/quest_screen.dart
 
-# 確認
+# 遒ｺ隱・
 git status
 
-# コミット
+# 繧ｳ繝溘ャ繝・
 git add .
-git commit -m "Fix: [説明]"
+git commit -m "Fix: [隱ｬ譏讃"
 
-# プッシュ
+# 繝励ャ繧ｷ繝･
 git push origin main
 
-# GitHub Actions が自動的に APK をビルド
-# → Actions タブで確認
-# → Artifacts から APK をダウンロード
+# GitHub Actions 縺瑚・蜍慕噪縺ｫ APK 繧偵ン繝ｫ繝・
+# 竊・Actions 繧ｿ繝悶〒遒ｺ隱・
+# 竊・Artifacts 縺九ｉ APK 繧偵ム繧ｦ繝ｳ繝ｭ繝ｼ繝・
 ```
 
 ---
 
-## 🔐 Personal Access Token（推奨）
+## 柏 Personal Access Token・域耳螂ｨ・・
 
-**パスワード代わりに PAT を使用**:
+**繝代せ繝ｯ繝ｼ繝我ｻ｣繧上ｊ縺ｫ PAT 繧剃ｽｿ逕ｨ**:
 
-1. GitHub → Settings → Developer settings → Personal access tokens
+1. GitHub 竊・Settings 竊・Developer settings 竊・Personal access tokens
 2. **Generate new token**
 3. Name: `sansu-kore-build`
 4. Scopes: `repo` (full control of private repositories)
 5. **Generate token**
-6. トークンをコピー（二度と見えません）
+6. 繝医・繧ｯ繝ｳ繧偵さ繝斐・・井ｺ悟ｺｦ縺ｨ隕九∴縺ｾ縺帙ｓ・・
 
-**git で使用**:
+**git 縺ｧ菴ｿ逕ｨ**:
 ```bash
 git push origin main
-# Username: yourwishappsdev-hash
-# Password: [Personal Access Token をペースト]
+# Username: appsdev-hash
+# Password: [Personal Access Token 繧偵・繝ｼ繧ｹ繝・
 ```
 
 ---
 
-## 📋 チェックリスト
+## 搭 繝√ぉ繝・け繝ｪ繧ｹ繝・
 
-- [ ] GitHub リポジトリ作成（プライベート）
-- [ ] ローカルコード push
-- [ ] .github/workflows/build-apk.yml 作成
-- [ ] GitHub Actions ワークフロー実行確認
-- [ ] APK アーティファクト確認
-- [ ] 毎回の push で自動ビルド動作確認
-
----
-
-## 🐛 トラブルシューティング
-
-### ワークフロー失敗時
-
-**GitHub の Actions タブ** → 失敗したワークフロー → ログ確認
-
-よくある原因:
-- `flutter pub get` 失敗 → `pubspec.yaml` 確認
-- `flutter build apk` 失敗 → ローカルでビルド確認
-- `shared_core` パス問題 → リポジトリ構成確認
+- [ ] GitHub 繝ｪ繝昴ず繝医Μ菴懈・・医・繝ｩ繧､繝吶・繝茨ｼ・
+- [ ] 繝ｭ繝ｼ繧ｫ繝ｫ繧ｳ繝ｼ繝・push
+- [ ] .github/workflows/build-apk.yml 菴懈・
+- [ ] GitHub Actions 繝ｯ繝ｼ繧ｯ繝輔Ο繝ｼ螳溯｡檎｢ｺ隱・
+- [ ] APK 繧｢繝ｼ繝・ぅ繝輔ぃ繧ｯ繝育｢ｺ隱・
+- [ ] 豈主屓縺ｮ push 縺ｧ閾ｪ蜍輔ン繝ｫ繝牙虚菴懃｢ｺ隱・
 
 ---
 
-**自動ビルド設定完了後**: 実機テストに戻る
+## 菅 繝医Λ繝悶Ν繧ｷ繝･繝ｼ繝・ぅ繝ｳ繧ｰ
+
+### 繝ｯ繝ｼ繧ｯ繝輔Ο繝ｼ螟ｱ謨玲凾
+
+**GitHub 縺ｮ Actions 繧ｿ繝・* 竊・螟ｱ謨励＠縺溘Ρ繝ｼ繧ｯ繝輔Ο繝ｼ 竊・繝ｭ繧ｰ遒ｺ隱・
+
+繧医￥縺ゅｋ蜴溷屏:
+- `flutter pub get` 螟ｱ謨・竊・`pubspec.yaml` 遒ｺ隱・
+- `flutter build apk` 螟ｱ謨・竊・繝ｭ繝ｼ繧ｫ繝ｫ縺ｧ繝薙Ν繝臥｢ｺ隱・
+- `shared_core` 繝代せ蝠城｡・竊・繝ｪ繝昴ず繝医Μ讒区・遒ｺ隱・
+
+---
+
+**閾ｪ蜍輔ン繝ｫ繝芽ｨｭ螳壼ｮ御ｺ・ｾ・*: 螳滓ｩ溘ユ繧ｹ繝医↓謌ｻ繧・
+
 

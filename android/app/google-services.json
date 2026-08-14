@@ -1,4 +1,4 @@
-{
+﻿{
   "project_info": {
     "project_number": "492221061005",
     "project_id": "your-wish-education",
@@ -9,7 +9,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:492221061005:android:0c9d94f157252096c88fc4",
         "android_client_info": {
-          "package_name": "com.yourwishapps.shougakukore.kokugo"
+          "package_name": "com.apps.shougakukore.kokugo"
         }
       },
       "oauth_client": [],
@@ -28,7 +28,7 @@
       "client_info": {
         "mobilesdk_app_id": "1:492221061005:android:bb5b4b43e1378b63c88fc4",
         "android_client_info": {
-          "package_name": "com.yourwishapps.shougakukore.sansu"
+          "package_name": "com.apps.shougakukore.sansu"
         }
       },
       "oauth_client": [],
