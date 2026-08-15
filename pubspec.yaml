@@ -54,11 +54,9 @@ flutter:
   uses-material-design: true
 
   assets:
-    - .env
     - assets/branding/
     - assets/app_icon/
     - assets/avatars/
-    - assets/icons/
     - assets/legal/
     - assets/characters/tier1/
     - assets/characters/tier2/
