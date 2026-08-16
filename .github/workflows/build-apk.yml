@@ -52,6 +52,14 @@ jobs:
     - name: Clean build cache
       run: flutter clean && flutter pub get
 
+    - name: Create google-services.json from Secret
+      env:
+        GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        if [ -n "$GOOGLE_SERVICES" ]; then
+          echo "$GOOGLE_SERVICES" > android/app/google-services.json
+        fi
+
     - name: Build APK
       run: flutter build apk --release --no-tree-shake-icons
 
@@ -102,9 +110,24 @@ jobs:
     - name: Install dependencies
       run: flutter pub get
 
+    - name: Create google-services.json from Secret
+      env:
+        GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        if [ -n "$GOOGLE_SERVICES" ]; then
+          echo "$GOOGLE_SERVICES" > android/app/google-services.json
+        fi
+
+    # Update CocoaPods repositories to resolve Swift Package Manager dependencies
+    - name: Update CocoaPods repositories
+      run: pod repo update
+
     # GoogleService-Info.plist未登録のため現時点ではFirebase iOS機能は動作しないが、
     # コード署名なしのコンパイル検証（Podfile/Xcodeプロジェクト設定の妥当性確認）は可能。
+    # Disable Swift Package Manager to avoid conflicts with CocoaPods (google_mobile_ads)
     - name: Build iOS (no codesign)
+      env:
+        FLUTTER_DISABLE_SWIFT_PACKAGE_MANAGER: "true"
       run: flutter build ios --release --no-codesign
 
     - name: Upload build output
@@ -135,6 +158,14 @@ jobs:
 
     - name: Install dependencies
       run: flutter pub get
+
+    - name: Create google-services.json from Secret
+      env:
+        GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
+      run: |
+        if [ -n "$GOOGLE_SERVICES" ]; then
+          echo "$GOOGLE_SERVICES" > android/app/google-services.json
+        fi
 
     - name: Import signing certificate
       env:
@@ -167,7 +198,13 @@ jobs:
         mkdir -p ~/.appstoreconnect/private_keys
         echo "$API_KEY_BASE64" | base64 --decode > ~/.appstoreconnect/private_keys/AuthKey_${KEY_ID}.p8
 
+    # Update CocoaPods repositories to resolve Swift Package Manager dependencies
+    - name: Update CocoaPods repositories
+      run: pod repo update
+
     - name: Build signed IPA
+      env:
+        FLUTTER_DISABLE_SWIFT_PACKAGE_MANAGER: "true"
       run: flutter build ipa --release --export-options-plist=ios/ExportOptions.plist
 
     - name: Upload to App Store Connect (TestFlight)
