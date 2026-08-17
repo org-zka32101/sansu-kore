@@ -71,6 +71,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
 
     final progress = ref.read(progressProvider);
 
+    // キャラクター育成状況（キャラ育成バッジ判定用）
+    final characterStates = ref.read(characterStateProvider).values;
+    final maxCharacterLevel = characterStates.isEmpty
+        ? 0
+        : characterStates.map((c) => c.level).reduce((a, b) => a > b ? a : b);
+    final charactersAtMaxLevel =
+        characterStates.where((c) => c.isMaxLevel).length;
+
     // バッジチェック
     final newBadges = await ref.read(badgeProvider.notifier).checkAndAward(
       BadgeCheckParams(
@@ -80,6 +88,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         maxStageCleared: progress.maxStageCleared,
         perfectStageCount: progress.perfectStageCount,
         justPerfect: r.isPerfect,
+        maxCharacterLevel: maxCharacterLevel,
+        charactersAtMaxLevel: charactersAtMaxLevel,
       ),
     );
 

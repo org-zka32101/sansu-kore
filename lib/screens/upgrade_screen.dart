@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../providers/premium_provider.dart';
@@ -80,16 +81,16 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
             _PlanCard(
               title: '月額プラン',
               price: '¥300/月',
-              description: '算数コレ！1教科',
+              description: '算数コレ！全ステージ解放',
               badge: null,
               onTap: _purchasing ? null : () => _purchase(context, ref, monthly: true),
             ),
             const SizedBox(height: 12),
             _PlanCard(
-              title: 'セット特別プラン',
-              price: '¥1,200/月',
-              description: '全6教科 + スターマスター',
-              badge: '60%OFF',
+              title: '年額プラン',
+              price: '¥2,400/年',
+              description: '算数コレ！全ステージ解放（月あたり¥200）',
+              badge: '4ヶ月分おトク',
               onTap: _purchasing ? null : () => _purchase(context, ref, monthly: false),
             ),
             const SizedBox(height: 20),
@@ -102,9 +103,9 @@ class _UpgradeScreenState extends ConsumerState<UpgradeScreen> {
               child: const Text('購入を復元する', style: TextStyle(color: kTextMuted)),
             ),
             const SizedBox(height: 8),
-            const Text(
-              '• 支払いはApple IDに請求されます\n• 購読はいつでもキャンセル可能\n• キャンセルは更新日の24時間前まで',
-              style: TextStyle(fontSize: 11, color: kTextMuted, height: 1.6),
+            Text(
+              '• 支払いは${Platform.isIOS ? 'Apple ID' : 'Googleアカウント'}に請求されます\n• 購読はいつでもキャンセル可能\n• キャンセルは更新日の24時間前まで',
+              style: const TextStyle(fontSize: 11, color: kTextMuted, height: 1.6),
               textAlign: TextAlign.center,
             ),
           ],
@@ -135,11 +136,7 @@ class _FeatureList extends StatelessWidget {
   Widget build(BuildContext context) {
     const features = [
       ('🔢', '全ステージ解放（小1〜小6）'),
-      ('🤖', 'AIアダプティブ学習'),
-      ('📅', 'デイリーログインボーナス'),
-      ('👨‍👩‍👧', '親のほめ導線自動通知'),
-      ('🏆', '全キャラクター収集'),
-      ('📊', '学習分析レポート'),
+      ('🏆', '全キャラクター（10体）をコンプリート'),
     ];
 
     return Column(

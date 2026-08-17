@@ -2,7 +2,7 @@ name: sansu_kore
 description: "算数コレ！- たし算からかんすうまで"
 publish_to: 'none'
 
-version: 3.1.0+13
+version: 3.1.1+14
 
 environment:
   sdk: ^3.11.5
@@ -18,10 +18,8 @@ dependencies:
     # 本家 shared_core を更新した場合は packages/shared_core, packages/cross_promo_kit
     # にも反映（再コピー）すること。
     path: packages/shared_core
-  cupertino_icons: ^1.0.8
   flutter_riverpod: ^2.6.1
   shared_preferences: ^2.3.0
-  intl: ^0.19.0
   confetti: ^0.8.0
   firebase_core: ^3.13.1
   firebase_auth: ^5.5.4
@@ -33,8 +31,6 @@ dependencies:
   # google_mobile_ads: ^5.2.0  # TODO: Re-enable once SPM/CocoaPods conflict is resolved
   share_plus: ^11.0.0
   flutter_tts: ^4.2.5
-  http: ^1.2.0
-  flutter_dotenv: ^5.1.0
 
 dev_dependencies:
   flutter_test:

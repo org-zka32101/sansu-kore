@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/quest_model.dart';
+import 'package:shared_core/shared_core.dart' show characterStateProvider;
 import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
 import '../providers/profile_provider.dart';
@@ -298,9 +299,10 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
     final shouldShowHint = adaptive.shouldShowHint(widget.stage.topicType);
     final tts = ref.watch(ttsProvider);
 
-    // キャラクターレベルを取得
-    final sansuProfile = ref.watch(sansuProfileProvider);
-    final characterLevel = sansuProfile.getCharacterLevel(_displayCharacterId);
+    // キャラクターレベルを取得（ショップでのレベルアップと同じソース）
+    final characterStates = ref.watch(characterStateProvider);
+    final characterLevel =
+        characterStates[_displayCharacterId]?.level ?? 1;
 
     return Scaffold(
       appBar: AppBar(

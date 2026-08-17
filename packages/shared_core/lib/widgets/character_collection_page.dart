@@ -4,6 +4,17 @@ import '../models/character_data.dart';
 import '../providers/character_state_provider.dart';
 import '../theme/app_theme_base.dart';
 
+/// [character.imageAsset] は Lv.1 用のパス（例: `..._lv1_normal.png`）で
+/// 登録されている想定。実際のレベルに応じて `_lv{n}_` 部分を置き換えて、
+/// レベルアップ後の見た目（表情・ポーズ等）が反映された画像を返す。
+/// 命名規則に合わないパスの場合はそのまま返す（フォールバック）。
+String _characterImagePath(BaseCharacter character, int level) {
+  final base = character.imageAsset;
+  if (base == null) return '';
+  if (!RegExp(r'_lv\d+_').hasMatch(base)) return base;
+  return base.replaceFirst(RegExp(r'_lv\d+_'), '_lv${level}_');
+}
+
 /// 全教科共通のキャラクター図鑑ページ。
 ///
 /// 使い方:
@@ -267,8 +278,12 @@ class _CharacterCard extends StatelessWidget {
                   SizedBox(
                     width: 60,
                     height: 60,
-                    child: Image.asset(character.imageAsset!,
-                        fit: BoxFit.contain),
+                    child: Image.asset(
+                      _characterImagePath(character, state.level),
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => Text(character.emoji,
+                          style: const TextStyle(fontSize: 34)),
+                    ),
                   )
                 else
                   Padding(
@@ -370,8 +385,12 @@ class _CharacterDetailSheet extends StatelessWidget {
                     SizedBox(
                       width: 100,
                       height: 100,
-                      child: Image.asset(character.imageAsset!,
-                          fit: BoxFit.contain),
+                      child: Image.asset(
+                        _characterImagePath(character, state.level),
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => Text(character.emoji,
+                            style: const TextStyle(fontSize: 52)),
+                      ),
                     )
                   else
                     Text(character.emoji,

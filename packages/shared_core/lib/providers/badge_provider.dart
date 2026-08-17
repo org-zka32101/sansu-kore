@@ -12,6 +12,10 @@ class BadgeCheckParams {
   final int maxStageCleared;
   final int perfectStageCount;
   final bool justPerfect;
+  // キャラクター育成バッジ（BadgeCategory.character）判定用。
+  // 未指定のアプリ（キャラ育成機能がない）は既定値0のままでよい。
+  final int maxCharacterLevel;   // 全キャラ中の最高レベル
+  final int charactersAtMaxLevel; // MAXレベルに到達したキャラ数
 
   const BadgeCheckParams({
     required this.streakDays,
@@ -20,6 +24,8 @@ class BadgeCheckParams {
     required this.maxStageCleared,
     required this.perfectStageCount,
     required this.justPerfect,
+    this.maxCharacterLevel = 0,
+    this.charactersAtMaxLevel = 0,
   });
 }
 
@@ -88,7 +94,9 @@ class BadgeNotifier extends Notifier<BadgeState> {
         BadgeCategory.writing  => p.totalPrimaryCorrect >= badge.requiredCount,
         BadgeCategory.grammar  => p.totalSecondaryCorrect >= badge.requiredCount,
         BadgeCategory.vocab    => p.totalPrimaryCorrect >= badge.requiredCount,
-        BadgeCategory.character => p.maxStageCleared >= badge.requiredCount,
+        BadgeCategory.character => badge.id == 'character_max_all'
+            ? p.charactersAtMaxLevel >= badge.requiredCount
+            : p.maxCharacterLevel >= badge.requiredCount,
       };
 
       if (earned) {
