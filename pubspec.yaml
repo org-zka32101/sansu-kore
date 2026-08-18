@@ -11,13 +11,12 @@ dependencies:
   flutter:
     sdk: flutter
   shared_core:
-    # H:\マイドライブ\apps\shared_core (兄弟フォルダ) を vendor したコピー。
-    # GitHub Actions は sansu-kore 単独のリポジトリのみを checkout するため、
-    # ../shared_core という相対パスは解決できない。CI・スタンドアロンリポジトリで
-    # ビルド可能にするため packages/ 配下に取り込んでいる。
-    # 本家 shared_core を更新した場合は packages/shared_core, packages/cross_promo_kit
-    # にも反映（再コピー）すること。
-    path: packages/shared_core
+    # 「小学コレシリーズ」共通パッケージ。以前はローカル兄弟フォルダの
+    # vendor コピー（packages/shared_core）を参照していたが、複数アプリから
+    # 参照できる独立リポジトリに切り出したため git dependency に切り替え。
+    git:
+      url: https://github.com/org-zka32101/shared_core.git
+      ref: main
   flutter_riverpod: ^2.6.1
   shared_preferences: ^2.3.0
   confetti: ^0.8.0
