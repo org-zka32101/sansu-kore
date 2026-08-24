@@ -49,7 +49,9 @@ Future<void> main() async {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
-    await CrossPromoService.init();
+    // TODO: CrossPromoService がクラッシュループの原因の可能性
+    // 一時的にコメントアウトして起動テスト
+    // await CrossPromoService.init();
   } catch (e) {
     if (kDebugMode) {
       print('❌ Firebase init error: $e');
