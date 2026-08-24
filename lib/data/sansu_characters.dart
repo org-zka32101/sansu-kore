@@ -8,6 +8,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'ichiko', name: 'イチコ', emoji: '🔢', tier: 1, unlockAt: 0,
     imageAsset: 'assets/characters/tier1/ichiko/ichiko_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier1/ichiko/ichiko_lv2_normal.png',
+      3: 'assets/characters/tier1/ichiko/ichiko_lv3_normal.png',
+      4: 'assets/characters/tier1/ichiko/ichiko_lv4_normal.png',
+      5: 'assets/characters/tier1/ichiko/ichiko_lv5_normal.png',
+    },
     subject: 'たし算',
     backstory: 'イチコは数字の「1」からうまれた算数の妖精。\n'
         '「最初の一歩はいつも勇気がいるけど、一緒に踏み出そう！」\n'
@@ -22,6 +28,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'niniko', name: 'ニニコ', emoji: '✌️', tier: 1, unlockAt: 3,
     imageAsset: 'assets/characters/tier1/niniko/niniko_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier1/niniko/niniko_lv2_normal.png',
+      3: 'assets/characters/tier1/niniko/niniko_lv3_normal.png',
+      4: 'assets/characters/tier1/niniko/niniko_lv4_normal.png',
+      5: 'assets/characters/tier1/niniko/niniko_lv5_normal.png',
+    },
     subject: 'ひき算',
     backstory: '双子の「2」がぴったり寄り添ったのがニニコ。\n'
         '協力することとバランスをとることが大好きで、\n'
@@ -36,6 +48,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'trai', name: 'トライ', emoji: '🔺', tier: 1, unlockAt: 5,
     imageAsset: 'assets/characters/tier1/trai/trai_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier1/trai/trai_lv2_normal.png',
+      3: 'assets/characters/tier1/trai/trai_lv3_normal.png',
+      4: 'assets/characters/tier1/trai/trai_lv4_normal.png',
+      5: 'assets/characters/tier1/trai/trai_lv5_normal.png',
+    },
     subject: 'かけ算',
     backstory: '三角形の頂点から生まれたトライは「安定」の象徴。\n'
         '三角形はどんな形の中でも最も強いって知ってるかな？\n'
@@ -50,6 +68,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'fouku', name: 'フォーク', emoji: '🍴', tier: 1, unlockAt: 8,
     imageAsset: 'assets/characters/tier1/fouku/fouku_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier1/fouku/fouku_lv2_normal.png',
+      3: 'assets/characters/tier1/fouku/fouku_lv3_normal.png',
+      4: 'assets/characters/tier1/fouku/fouku_lv4_normal.png',
+      5: 'assets/characters/tier1/fouku/fouku_lv5_normal.png',
+    },
     subject: 'わり算',
     backstory: '4本の枝に分かれる形をしたフォーク。\n'
         '「分ける」ことと「選ぶ」ことが大好きで、\n'
@@ -65,6 +89,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'gogo', name: 'ゴーゴ', emoji: '✋', tier: 2, unlockAt: 12,
     imageAsset: 'assets/characters/tier2/gogo/gogo_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier2/gogo/gogo_lv2_normal.png',
+      3: 'assets/characters/tier2/gogo/gogo_lv3_normal.png',
+      4: 'assets/characters/tier2/gogo/gogo_lv4_normal.png',
+      5: 'assets/characters/tier2/gogo/gogo_lv5_normal.png',
+    },
     subject: '分数・小数',
     backstory: '手の指5本から生まれたゴーゴは行動派。\n'
         '「数字は整数だけじゃない！分数や小数もあるんだよ！」\n'
@@ -79,6 +109,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'multiko', name: 'マルティプル', emoji: '✖️', tier: 2, unlockAt: 18,
     imageAsset: 'assets/characters/tier2/multiko/multiko_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier2/multiko/multiko_lv2_normal.png',
+      3: 'assets/characters/tier2/multiko/multiko_lv3_normal.png',
+      4: 'assets/characters/tier2/multiko/multiko_lv4_normal.png',
+      5: 'assets/characters/tier2/multiko/multiko_lv5_normal.png',
+    },
     subject: '大きい数のかけ算',
     backstory: 'かけ算記号「×」が目になった強力なキャラクター。\n'
         '「かけ算はたし算の超スピード版！」が口癖で、\n'
@@ -93,6 +129,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'divido', name: 'ディバイド', emoji: '➗', tier: 2, unlockAt: 24,
     imageAsset: 'assets/characters/tier2/divido/divido_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier2/divido/divido_lv2_normal.png',
+      3: 'assets/characters/tier2/divido/divido_lv3_normal.png',
+      4: 'assets/characters/tier2/divido/divido_lv4_normal.png',
+      5: 'assets/characters/tier2/divido/divido_lv5_normal.png',
+    },
     subject: 'わり算の筆算',
     backstory: '割り算記号「÷」の形をしたディバイドは公平の守護者。\n'
         '「分ける美しさを理解した者だけが、ディバイドと友達になれる」\n'
@@ -108,6 +150,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'geome', name: 'ジオメ', emoji: '📐', tier: 3, unlockAt: 32,
     imageAsset: 'assets/characters/tier3/geome/geome_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier3/geome/geome_lv2_normal.png',
+      3: 'assets/characters/tier3/geome/geome_lv3_normal.png',
+      4: 'assets/characters/tier3/geome/geome_lv4_normal.png',
+      5: 'assets/characters/tier3/geome/geome_lv5_normal.png',
+    },
     subject: '図形',
     backstory: '幾何学模様とコンパスが融合したジオメは完璧主義者。\n'
         '三角形、四角形、円、立体…あらゆる形を愛している。\n'
@@ -122,6 +170,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'calcuku', name: 'カルキュ', emoji: '🧮', tier: 3, unlockAt: 40,
     imageAsset: 'assets/characters/tier3/calcuku/calcuku_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier3/calcuku/calcuku_lv2_normal.png',
+      3: 'assets/characters/tier3/calcuku/calcuku_lv3_normal.png',
+      4: 'assets/characters/tier3/calcuku/calcuku_lv4_normal.png',
+      5: 'assets/characters/tier3/calcuku/calcuku_lv5_normal.png',
+    },
     subject: '算数総合',
     backstory: '古い計算機とそろばんを背負ったカルキュは算数の賢者。\n'
         '数千年の算数の歴史を知っていて、\n'
@@ -137,6 +191,12 @@ const List<BaseCharacter> kSansuCharacters = [
   BaseCharacter(
     id: 'plus_minus', name: 'プラスマイナス', emoji: '⚡', tier: 4, unlockAt: 48,
     imageAsset: 'assets/characters/tier4/plus_minus/plus_minus_lv1_normal.png',
+    levelImages: {
+      2: 'assets/characters/tier4/plus_minus/plus_minus_lv2_normal.png',
+      3: 'assets/characters/tier4/plus_minus/plus_minus_lv3_normal.png',
+      4: 'assets/characters/tier4/plus_minus/plus_minus_lv4_normal.png',
+      5: 'assets/characters/tier4/plus_minus/plus_minus_lv5_normal.png',
+    },
     subject: '算数マスター',
     backstory: '+と−が合体した伝説の存在、プラスマイナス。\n'
         'たし算もひき算も、かけ算もわり算も、図形も、全部マスターした。\n'

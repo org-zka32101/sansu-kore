@@ -237,7 +237,7 @@ const allSansuBadges = [
     title: 'キャラクターLv.3',
     description: 'キャラを Lv.3 に育成した',
     emoji: '⭐',
-    category: BadgeCategory.special,
+    category: BadgeCategory.character,
     requiredCount: 3,
   ),
   BadgeModel(
@@ -245,7 +245,7 @@ const allSansuBadges = [
     title: 'キャラクターLv.MAX',
     description: 'キャラを Lv.5（MAX）に育成した',
     emoji: '⭐',
-    category: BadgeCategory.special,
+    category: BadgeCategory.character,
     requiredCount: 5,
   ),
   BadgeModel(
@@ -253,7 +253,7 @@ const allSansuBadges = [
     title: '全キャラMAX育成',
     description: '全キャラを Lv.5に育成した（究極）',
     emoji: '⭐',
-    category: BadgeCategory.special,
+    category: BadgeCategory.character,
     requiredCount: 10,
   ),
 

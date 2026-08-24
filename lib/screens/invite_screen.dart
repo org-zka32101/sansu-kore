@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import '../providers/profile_provider.dart';
+import '../providers/referral_provider.dart';
 import '../theme/app_theme.dart';
 
 class InviteScreen extends ConsumerStatefulWidget {
@@ -13,13 +14,28 @@ class InviteScreen extends ConsumerStatefulWidget {
 }
 
 class _InviteScreenState extends ConsumerState<InviteScreen> {
-  String? _referralCode;
-  bool _isGenerating = false;
+  final _redeemController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    // 自分のコードが友達に使われて貯まった未受取コインを回収
+    Future.microtask(
+      () => ref.read(referralProvider.notifier).claimPendingCreatorRewards(),
+    );
+  }
+
+  @override
+  void dispose() {
+    _redeemController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(profileProvider);
     final childName = profile.currentProfile?.name ?? 'お友達';
+    final referral = ref.watch(referralProvider);
 
     return Scaffold(
       backgroundColor: kBgLight,
@@ -94,7 +110,11 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
             const SizedBox(height: 24),
 
             // 紹介コード表示セクション
-            _buildReferralCodeSection(context, childName),
+            _buildReferralCodeSection(context, childName, referral),
+            const SizedBox(height: 24),
+
+            // 友達のコードを入力するセクション
+            _buildRedeemSection(context, referral),
             const SizedBox(height: 24),
 
             // 説明テキスト
@@ -110,8 +130,9 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
   }
 
   // 紹介コード表示セクションを構築
-  Widget _buildReferralCodeSection(BuildContext context, String childName) {
-    if (_referralCode == null) {
+  Widget _buildReferralCodeSection(
+      BuildContext context, String childName, ReferralState referral) {
+    if (referral.activeCode == null) {
       // コード生成前
       return Column(
         children: [
@@ -135,7 +156,7 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: _isGenerating ? null : () => _generateCode(context),
+                    onPressed: referral.isBusy ? null : () => _generateCode(context),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF27AE60),
                       foregroundColor: Colors.white,
@@ -145,7 +166,7 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
                       ),
                     ),
                     child: Text(
-                      _isGenerating ? 'コード生成中...' : 'コードを生成',
+                      referral.isBusy ? 'コード生成中...' : 'コードを生成',
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
                     ),
                   ),
@@ -184,7 +205,7 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
               border: Border.all(color: const Color(0xFF27AE60), width: 2),
             ),
             child: Text(
-              _referralCode!,
+              referral.activeCode!,
               style: const TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.bold,
@@ -200,7 +221,7 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
             children: [
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _copyCode(context, _referralCode!),
+                  onPressed: () => _copyCode(context, referral.activeCode!),
                   icon: const Icon(Icons.copy),
                   label: const Text('コピー'),
                   style: ElevatedButton.styleFrom(
@@ -212,7 +233,7 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: ElevatedButton.icon(
-                  onPressed: () => _shareCode(context, childName, _referralCode!),
+                  onPressed: () => _shareCode(context, childName, referral.activeCode!),
                   icon: const Icon(Icons.share),
                   label: const Text('シェア'),
                   style: ElevatedButton.styleFrom(
@@ -228,37 +249,88 @@ class _InviteScreenState extends ConsumerState<InviteScreen> {
     );
   }
 
+  // 友達のコードを入力するセクション
+  Widget _buildRedeemSection(BuildContext context, ReferralState referral) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Row(
+            children: [
+              Icon(Icons.mail_outline, color: Colors.blue),
+              SizedBox(width: 8),
+              Text('友達のコードを入力',
+                  style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _redeemController,
+            textCapitalization: TextCapitalization.characters,
+            decoration: InputDecoration(
+              hintText: '例：SANSUXXXXXX',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+              contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: referral.isBusy ? null : () => _redeemCode(context),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              child: Text(referral.isBusy ? '確認中...' : 'コードを使う'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // コード生成処理
   Future<void> _generateCode(BuildContext context) async {
-    setState(() => _isGenerating = true);
+    final code = await ref.read(referralProvider.notifier).generateCode();
+    if (!mounted) return;
+    final error = ref.read(referralProvider).errorMessage;
+    if (code != null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('紹介コードが生成されました！'),
+          backgroundColor: Color(0xFF27AE60),
+        ),
+      );
+    } else if (error != null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
+    }
+  }
 
-    try {
-      final profile = ref.read(profileProvider);
-      final userId = profile.currentProfile?.id ?? 'unknown';
-      final childName = profile.currentProfile?.name ?? 'お友達';
-
-      // 新しいコードを生成・保存
-      // （実装簡略化のため、ここではダミーコードを生成）
-      final newCode = 'SANSU${DateTime.now().toString().substring(0, 8)}${_randomString(5)}';
-
-      setState(() => _referralCode = newCode);
-
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('紹介コードが生成されました！'),
-            backgroundColor: Color(0xFF27AE60),
-          ),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('エラー: $e')),
-        );
-      }
-    } finally {
-      setState(() => _isGenerating = false);
+  // コード入力処理
+  Future<void> _redeemCode(BuildContext context) async {
+    final input = _redeemController.text;
+    final error = await ref.read(referralProvider.notifier).redeemCode(input);
+    if (!mounted) return;
+    if (error == null) {
+      _redeemController.clear();
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('コードを適用しました！50コインを獲得！'),
+          backgroundColor: Color(0xFF27AE60),
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(error)));
     }
   }
 
@@ -296,17 +368,6 @@ $childName のお友達へ
     } catch (_) {
       // シェアキャンセル
     }
-  }
-
-  // ランダム文字列生成
-  String _randomString(int length) {
-    const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    String result = '';
-    final random = DateTime.now().millisecondsSinceEpoch;
-    for (int i = 0; i < length; i++) {
-      result += chars[(random + i) % chars.length];
-    }
-    return result;
   }
 }
 

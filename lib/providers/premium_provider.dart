@@ -24,9 +24,6 @@ class PremiumState {
     this.isLoading = true,
   });
 
-  bool canAccessStage(int stageNumber) =>
-      isPremium || isTrialActive || stageNumber <= kFreeStageLimit;
-
   PremiumState copyWith({bool? isPremium, bool? isTrialActive, int? trialDaysLeft, bool? isLoading}) {
     return PremiumState(
       isPremium: isPremium ?? this.isPremium,
