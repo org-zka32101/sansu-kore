@@ -23,6 +23,7 @@ class BaseCharacter {
   final String backstory; // revealed at Lv.4
   final List<String> stampPhrases; // 8 phrases for LINE stamp
   final String? imageAsset; // optional character illustration
+  final Map<int, String>? levelImages; // level-up visual progression
 
   const BaseCharacter({
     required this.id,
@@ -34,6 +35,7 @@ class BaseCharacter {
     required this.backstory,
     required this.stampPhrases,
     this.imageAsset,
+    this.levelImages,
   });
 }
 
