@@ -11,12 +11,7 @@ dependencies:
   flutter:
     sdk: flutter
   shared_core:
-    # 「小学コレシリーズ」共通パッケージ。以前はローカル兄弟フォルダの
-    # vendor コピー（packages/shared_core）を参照していたが、複数アプリから
-    # 参照できる独立リポジトリに切り出したため git dependency に切り替え。
-    git:
-      url: https://github.com/org-zka32101/shared_core.git
-      ref: main
+    path: packages/shared_core
   flutter_riverpod: ^2.6.1
   shared_preferences: ^2.3.0
   confetti: ^0.8.0
