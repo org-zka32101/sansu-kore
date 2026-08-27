@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_core/shared_core.dart' show characterStateProvider;
+// import 'package:google_mobile_ads/google_mobile_ads.dart';  // TODO: Re-enable once SPM/CocoaPods conflict resolved
 import '../models/quest_model.dart';
 import 'package:shared_core/models/badge_model.dart';
 import '../providers/progress_provider.dart';
@@ -11,6 +12,8 @@ import '../providers/coin_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
+// import '../providers/ads_provider.dart';  // TODO: Re-enable with google_mobile_ads
+// import '../providers/premium_provider.dart';  // TODO: Re-enable with ads
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -28,6 +31,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   late ConfettiController _confetti;
   List<BadgeModel> _newBadges = [];
   bool _saving = true;
+  // bool _showingRewardedAd = false;  // TODO: Re-enable with rewarded ads
 
   @override
   void initState() {
@@ -37,6 +41,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       if (mounted) {
         setState(() => _saving = false);
         _confetti.play();
+        // TODO: リワード広告を読み込み（無料ユーザー向け）
+        // _loadRewardedAdIfNeeded();
       }
     }).catchError((e) {
       if (mounted) {
@@ -47,6 +53,48 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       }
     });
   }
+
+  // TODO: リワード広告関連のメソッド（google_mobile_ads の SPM/CocoaPods 競合解決後）
+  // void _loadRewardedAdIfNeeded() {
+  //   final premium = ref.read(premiumProvider);
+  //   if (!premium.isPremium && !premium.isTrialActive) {
+  //     ref.read(adsProvider.notifier).loadRewardedAd();
+  //   }
+  // }
+  //
+  // void _showRewardedAd() {
+  //   final premium = ref.read(premiumProvider);
+  //   if (premium.isPremium || premium.isTrialActive) {
+  //     // プレミアム・トライアル中ユーザーは直接解く
+  //     _retakeQuest();
+  //     return;
+  //   }
+  //
+  //   setState(() => _showingRewardedAd = true);
+  //
+  //   ref.read(adsProvider.notifier).showRewardedAd(
+  //     onUserEarnedReward: (ad, reward) {
+  //       // ユーザーが報酬を獲得（広告視聴完了）
+  //       if (mounted) {
+  //         _retakeQuest();
+  //       }
+  //     },
+  //     onAdDismissed: () {
+  //       // 広告が閉じられた
+  //       if (mounted) {
+  //         setState(() => _showingRewardedAd = false);
+  //       }
+  //     },
+  //   );
+  // }
+  //
+  // void _retakeQuest() {
+  //   Navigator.of(context).pushNamedAndRemoveUntil(
+  //     '/quest',
+  //     (route) => route.settings.name == '/home',
+  //     arguments: widget.stage,
+  //   );
+  // }
 
   Future<void> _saveResult() async {
     final r = widget.result;
@@ -154,6 +202,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   @override
   void dispose() {
     _confetti.dispose();
+    // ref.read(adsProvider.notifier).disposeRewardedAd();  // TODO: Re-enable with rewarded ads
     super.dispose();
   }
 
@@ -217,6 +266,23 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   _ShareAchievementButton(result: r, stage: widget.stage),
                 ],
                 const SizedBox(height: 28),
+                // TODO: もう一度解くボタン（リワード広告付き）
+                // SizedBox(
+                //   width: double.infinity,
+                //   child: ElevatedButton.icon(
+                //     onPressed: _showingRewardedAd ? null : _showRewardedAd,
+                //     icon: const Icon(Icons.refresh),
+                //     label: _showingRewardedAd
+                //         ? const Text('広告視聴中...')
+                //         : const Text('もう一度解く'),
+                //     style: ElevatedButton.styleFrom(
+                //       padding: const EdgeInsets.symmetric(vertical: 14),
+                //       backgroundColor: kAccentOrange,
+                //       disabledBackgroundColor: Colors.grey.shade300,
+                //     ),
+                //   ),
+                // ),
+                // const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
