@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import '../data/stage_data.dart';
 import '../models/quest_model.dart';
 import '../providers/premium_provider.dart';
 import '../providers/progress_provider.dart';
+import '../providers/ads_provider.dart';
 import '../theme/app_theme.dart';
 
 class StageSelectScreen extends ConsumerStatefulWidget {
@@ -64,6 +66,9 @@ class _StageSelectScreenState extends ConsumerState<StageSelectScreen> {
                     onTap: _onTapStage,
                   ),
           ),
+          // バナー広告（無料ユーザーのみ表示）
+          if (!premium.isPremium && !premium.isTrialActive)
+            const _BannerAdWidget(),
         ],
       ),
     );
@@ -467,6 +472,63 @@ class _FilterChip extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ── バナー広告ウィジェット ───────────────────────────────────────
+class _BannerAdWidget extends ConsumerStatefulWidget {
+  const _BannerAdWidget();
+
+  @override
+  ConsumerState<_BannerAdWidget> createState() => _BannerAdWidgetState();
+}
+
+class _BannerAdWidgetState extends ConsumerState<_BannerAdWidget> {
+  @override
+  void initState() {
+    super.initState();
+    // バナー広告を読み込み
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(adsProvider.notifier).loadBannerAd();
+    });
+  }
+
+  @override
+  void dispose() {
+    ref.read(adsProvider.notifier).disposeBannerAd();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final adsState = ref.watch(adsProvider);
+
+    if (adsState.bannerLoading) {
+      return Container(
+        height: 60,
+        color: Colors.grey.shade100,
+        alignment: Alignment.center,
+        child: const SizedBox(
+          width: 20,
+          height: 20,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+
+    if (adsState.bannerError != null || adsState.bannerAd == null) {
+      return const SizedBox.shrink();
+    }
+
+    return Container(
+      height: 60,
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      alignment: Alignment.center,
+      child: AdWidget(ad: adsState.bannerAd!),
     );
   }
 }
