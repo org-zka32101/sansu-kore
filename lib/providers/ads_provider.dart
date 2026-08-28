@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-// ── AdsProvider: バナー・リワード広告管理 ────────────────────────────
+// ── AdsProvider: バナー・インタースティシャル広告管理 ────────────────────────────
 
 class AdsNotifier extends StateNotifier<AdsState> {
   AdsNotifier() : super(const AdsState());
@@ -12,7 +12,7 @@ class AdsNotifier extends StateNotifier<AdsState> {
       state = state.copyWith(bannerLoading: true);
 
       final bannerAd = BannerAd(
-        adUnitId: _testBannerAdUnitId,
+        adUnitId: _bannerAdUnitId,
         size: AdSize.banner,
         request: const AdRequest(),
         listener: BannerAdListener(
@@ -42,44 +42,43 @@ class AdsNotifier extends StateNotifier<AdsState> {
     }
   }
 
-  // リワード広告の読み込み
-  Future<void> loadRewardedAd() async {
+  // インタースティシャル広告の読み込み
+  Future<void> loadInterstitialAd() async {
     try {
-      state = state.copyWith(rewardedLoading: true);
+      state = state.copyWith(interstitialLoading: true);
 
-      RewardedAd.load(
-        adUnitId: _testRewardedAdUnitId,
+      InterstitialAd.load(
+        adUnitId: _interstitialAdUnitId,
         request: const AdRequest(),
-        rewardedAdLoadCallback: RewardedAdLoadCallback(
+        adLoadCallback: InterstitialAdLoadCallback(
           onAdLoaded: (ad) {
             state = state.copyWith(
-              rewardedAd: ad,
-              rewardedLoading: false,
-              rewardedError: null,
+              interstitialAd: ad,
+              interstitialLoading: false,
+              interstitialError: null,
             );
           },
           onAdFailedToLoad: (error) {
             state = state.copyWith(
-              rewardedLoading: false,
-              rewardedError: error.message,
+              interstitialLoading: false,
+              interstitialError: error.message,
             );
           },
         ),
       );
     } catch (e) {
       state = state.copyWith(
-        rewardedLoading: false,
-        rewardedError: e.toString(),
+        interstitialLoading: false,
+        interstitialError: e.toString(),
       );
     }
   }
 
-  // リワード広告を表示（ユーザーが報酬を獲得できる）
-  void showRewardedAd({
-    required void Function(AdWithoutView ad, RewardItem reward) onUserEarnedReward,
+  // インタースティシャル広告を表示
+  void showInterstitialAd({
     required void Function() onAdDismissed,
   }) {
-    final ad = state.rewardedAd;
+    final ad = state.interstitialAd;
     if (ad == null) {
       onAdDismissed();
       return;
@@ -89,23 +88,21 @@ class AdsNotifier extends StateNotifier<AdsState> {
       onAdShowedFullScreenContent: (ad) {},
       onAdDismissedFullScreenContent: (ad) {
         ad.dispose();
-        state = state.copyWith(rewardedAd: null);
+        state = state.copyWith(interstitialAd: null);
         onAdDismissed();
         // 次の広告を読み込む
-        loadRewardedAd();
+        loadInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
         ad.dispose();
-        state = state.copyWith(rewardedAd: null);
+        state = state.copyWith(interstitialAd: null);
         onAdDismissed();
         // 次の広告を読み込む
-        loadRewardedAd();
+        loadInterstitialAd();
       },
     );
 
-    ad.show(
-      onUserEarnedReward: onUserEarnedReward,
-    );
+    ad.show();
   }
 
   // バナー広告をクリア
@@ -114,16 +111,16 @@ class AdsNotifier extends StateNotifier<AdsState> {
     state = state.copyWith(bannerAd: null);
   }
 
-  // リワード広告をクリア
-  void disposeRewardedAd() {
-    state.rewardedAd?.dispose();
-    state = state.copyWith(rewardedAd: null);
+  // インタースティシャル広告をクリア
+  void disposeInterstitialAd() {
+    state.interstitialAd?.dispose();
+    state = state.copyWith(interstitialAd: null);
   }
 
   @override
   void dispose() {
     disposeBannerAd();
-    disposeRewardedAd();
+    disposeInterstitialAd();
     super.dispose();
   }
 }
@@ -132,42 +129,42 @@ class AdsState {
   final BannerAd? bannerAd;
   final bool bannerLoading;
   final String? bannerError;
-  final RewardedAd? rewardedAd;
-  final bool rewardedLoading;
-  final String? rewardedError;
+  final InterstitialAd? interstitialAd;
+  final bool interstitialLoading;
+  final String? interstitialError;
 
   const AdsState({
     this.bannerAd,
     this.bannerLoading = false,
     this.bannerError,
-    this.rewardedAd,
-    this.rewardedLoading = false,
-    this.rewardedError,
+    this.interstitialAd,
+    this.interstitialLoading = false,
+    this.interstitialError,
   });
 
   AdsState copyWith({
     BannerAd? bannerAd,
     bool? bannerLoading,
     String? bannerError,
-    RewardedAd? rewardedAd,
-    bool? rewardedLoading,
-    String? rewardedError,
+    InterstitialAd? interstitialAd,
+    bool? interstitialLoading,
+    String? interstitialError,
   }) {
     return AdsState(
       bannerAd: bannerAd ?? this.bannerAd,
       bannerLoading: bannerLoading ?? this.bannerLoading,
       bannerError: bannerError ?? this.bannerError,
-      rewardedAd: rewardedAd ?? this.rewardedAd,
-      rewardedLoading: rewardedLoading ?? this.rewardedLoading,
-      rewardedError: rewardedError ?? this.rewardedError,
+      interstitialAd: interstitialAd ?? this.interstitialAd,
+      interstitialLoading: interstitialLoading ?? this.interstitialLoading,
+      interstitialError: interstitialError ?? this.interstitialError,
     );
   }
 }
 
-// ── テスト用 AdUnit ID ────────────────────────────────────────────
-// 実運用時は Google AdMob の実ID に置き換える
-const String _testBannerAdUnitId = 'ca-app-pub-3940256099942544/6300978111';
-const String _testRewardedAdUnitId = 'ca-app-pub-3940256099942544/5224354917';
+// ── Google AdMob Ad Unit ID ────────────────────────────────────────────
+// sansu-kore アプリ用 ID
+const String _bannerAdUnitId = 'ca-app-pub-5058227312086483/7662073953';
+const String _interstitialAdUnitId = 'ca-app-pub-5058227312086483/XXXXXXXXXX'; // TODO: インタースティシャル広告のユニットIDを設定
 
 // ── Riverpod Provider ─────────────────────────────────────────────
 final adsProvider = StateNotifierProvider<AdsNotifier, AdsState>((ref) {

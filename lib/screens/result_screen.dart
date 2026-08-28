@@ -31,7 +31,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   late ConfettiController _confetti;
   List<BadgeModel> _newBadges = [];
   bool _saving = true;
-  // bool _showingRewardedAd = false;  // TODO: Re-enable with rewarded ads
+  // bool _showingInterstitialAd = false;  // TODO: Re-enable with interstitial ads
 
   @override
   void initState() {
@@ -41,8 +41,8 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       if (mounted) {
         setState(() => _saving = false);
         _confetti.play();
-        // TODO: リワード広告を読み込み（無料ユーザー向け）
-        // _loadRewardedAdIfNeeded();
+        // TODO: インタースティシャル広告を読み込み（無料ユーザー向け）
+        // _loadInterstitialAdIfNeeded();
       }
     }).catchError((e) {
       if (mounted) {
@@ -54,15 +54,15 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     });
   }
 
-  // TODO: リワード広告関連のメソッド（google_mobile_ads の SPM/CocoaPods 競合解決後）
-  // void _loadRewardedAdIfNeeded() {
+  // TODO: インタースティシャル広告関連のメソッド（google_mobile_ads の SPM/CocoaPods 競合解決後）
+  // void _loadInterstitialAdIfNeeded() {
   //   final premium = ref.read(premiumProvider);
   //   if (!premium.isPremium && !premium.isTrialActive) {
-  //     ref.read(adsProvider.notifier).loadRewardedAd();
+  //     ref.read(adsProvider.notifier).loadInterstitialAd();
   //   }
   // }
   //
-  // void _showRewardedAd() {
+  // void _showInterstitialAd() {
   //   final premium = ref.read(premiumProvider);
   //   if (premium.isPremium || premium.isTrialActive) {
   //     // プレミアム・トライアル中ユーザーは直接解く
@@ -70,20 +70,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   //     return;
   //   }
   //
-  //   setState(() => _showingRewardedAd = true);
+  //   setState(() => _showingInterstitialAd = true);
   //
-  //   ref.read(adsProvider.notifier).showRewardedAd(
-  //     onUserEarnedReward: (ad, reward) {
-  //       // ユーザーが報酬を獲得（広告視聴完了）
-  //       if (mounted) {
-  //         _retakeQuest();
-  //       }
-  //     },
+  //   ref.read(adsProvider.notifier).showInterstitialAd(
   //     onAdDismissed: () {
-  //       // 広告が閉じられた
+  //       // 広告が閉じられた後、「もう一度解く」ボタンを有効化
   //       if (mounted) {
-  //         setState(() => _showingRewardedAd = false);
+  //         setState(() => _showingInterstitialAd = false);
   //       }
+  //       // 自動的にステージに戻る
+  //       _retakeQuest();
   //     },
   //   );
   // }
@@ -202,7 +198,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   @override
   void dispose() {
     _confetti.dispose();
-    // ref.read(adsProvider.notifier).disposeRewardedAd();  // TODO: Re-enable with rewarded ads
+    // ref.read(adsProvider.notifier).disposeInterstitialAd();  // TODO: Re-enable with interstitial ads
     super.dispose();
   }
 
@@ -266,13 +262,13 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   _ShareAchievementButton(result: r, stage: widget.stage),
                 ],
                 const SizedBox(height: 28),
-                // TODO: もう一度解くボタン（リワード広告付き）
+                // TODO: もう一度解くボタン（インタースティシャル広告付き）
                 // SizedBox(
                 //   width: double.infinity,
                 //   child: ElevatedButton.icon(
-                //     onPressed: _showingRewardedAd ? null : _showRewardedAd,
+                //     onPressed: _showingInterstitialAd ? null : _showInterstitialAd,
                 //     icon: const Icon(Icons.refresh),
-                //     label: _showingRewardedAd
+                //     label: _showingInterstitialAd
                 //         ? const Text('広告視聴中...')
                 //         : const Text('もう一度解く'),
                 //     style: ElevatedButton.styleFrom(
