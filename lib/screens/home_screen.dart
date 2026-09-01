@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../data/stage_data.dart';
+import '../data/math_tips_data.dart';
 import '../providers/progress_provider.dart';
 import '../providers/badge_provider.dart';
 import '../providers/coin_provider.dart';
@@ -642,13 +643,20 @@ class _SpecialModeSection extends StatelessWidget {
 }
 
 /// 算数ガイドセクション
-class _MathGuideSection extends StatelessWidget {
+class _MathGuideSection extends ConsumerWidget {
   final VoidCallback onTap;
 
   const _MathGuideSection({required this.onTap});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final profile = ref.watch(profileProvider).currentProfile;
+
+    // 現在のグレードに基づいてティップを取得
+    final tip = profile != null
+        ? getRandomTipForGrade(profile.grade)
+        : getRandomTipForGrade(1);
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -678,7 +686,10 @@ class _MathGuideSection extends StatelessWidget {
                 color: const Color(0xFF667EEA).withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Text('?', style: TextStyle(fontSize: 28)),
+              child: Text(
+                tip.emoji,
+                style: const TextStyle(fontSize: 28),
+              ),
             ),
             const SizedBox(width: 16),
             // テキスト
@@ -686,21 +697,23 @@ class _MathGuideSection extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    '算数ガイド',
-                    style: TextStyle(
+                  Text(
+                    tip.title,
+                    style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Colors.black87,
                     ),
                   ),
                   const SizedBox(height: 4),
-                  const Text(
-                    'たし算のやり方、かけ算の仕組みなど',
-                    style: TextStyle(
+                  Text(
+                    tip.description,
+                    style: const TextStyle(
                       fontSize: 13,
                       color: Colors.grey,
                     ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                   ),
                 ],
               ),
