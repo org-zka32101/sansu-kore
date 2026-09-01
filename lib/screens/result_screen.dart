@@ -5,6 +5,7 @@ import 'package:share_plus/share_plus.dart';
 import 'package:shared_core/shared_core.dart' show characterStateProvider;
 // import 'package:google_mobile_ads/google_mobile_ads.dart';  // TODO: Re-enable once SPM/CocoaPods conflict resolved
 import '../models/quest_model.dart';
+import '../models/ranking_model.dart';
 import 'package:shared_core/models/badge_model.dart';
 import '../providers/progress_provider.dart';
 import '../providers/badge_provider.dart';
@@ -12,6 +13,7 @@ import '../providers/coin_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
+import '../providers/ranking_provider.dart';
 // import '../providers/ads_provider.dart';  // TODO: Re-enable with google_mobile_ads
 // import '../providers/premium_provider.dart';  // TODO: Re-enable with ads
 import '../services/notification_service.dart';
@@ -112,6 +114,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       correct: r.correctCount,
       total: r.totalCount,
     );
+
+    // ランキングスコアを更新
+    // 各問題のスコア計算（平均応答時間を使用）
+    final avgResponseTime = r.elapsed.inMilliseconds / r.totalCount / 1000;
+    final scoreData = QuestionScoreData.calculate(
+      questionId: '${s.grade}-${s.stageNumber}',
+      isCorrect: r.correctCount > 0,
+      responseTimeSeconds: avgResponseTime,
+    );
+    await ref.read(rankingProvider.notifier).updateScoreAfterQuestion(scoreData);
 
     final progress = ref.read(progressProvider);
 
