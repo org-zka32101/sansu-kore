@@ -186,7 +186,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
       await prefs.setBool('guide_progress_${guideId}_isCompleted',
           progress.isCompleted);
     } catch (e) {
-      print('Error saving guide progress: $e');
+      if (kDebugMode) print('Error saving guide progress: $e');
     }
   }
 
@@ -206,7 +206,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
       }
       await prefs.remove('guide_progress_keys');
     } catch (e) {
-      print('Error resetting guide progress: $e');
+      if (kDebugMode) print('Error resetting guide progress: $e');
     }
   }
 }

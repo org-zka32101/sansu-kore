@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/ranking_model.dart';
 import 'profile_provider.dart';
@@ -244,7 +245,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
       }
     } catch (e) {
       // ユーザーがまだランキングにない可能性がある
-      print('Error fetching current user ranking: $e');
+      if (kDebugMode) print('Error fetching current user ranking: $e');
     }
   }
 
@@ -280,7 +281,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
       // 現在のユーザー情報を再取得
       await fetchCurrentUserRanking();
     } catch (e) {
-      print('Error updating score: $e');
+      if (kDebugMode) print('Error updating score: $e');
     }
   }
 
@@ -390,7 +391,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
 
       await batch.commit();
     } catch (e) {
-      print('Error initializing user ranking: $e');
+      if (kDebugMode) print('Error initializing user ranking: $e');
     }
   }
 
@@ -432,7 +433,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
         );
       }
     } catch (e) {
-      print('Error updating name public setting: $e');
+      if (kDebugMode) print('Error updating name public setting: $e');
     }
   }
 
