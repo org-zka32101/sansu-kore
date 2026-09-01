@@ -57,7 +57,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
   final Ref _ref;
 
   RankingNotifier(this._firestore, this._auth, this._ref)
-      : super(const RankingState());
+      : super(RankingState());
 
   /// グローバルランキングを取得（全ユーザーの上位100位まで）
   Future<void> fetchGlobalRanking() async {
