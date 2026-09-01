@@ -4,9 +4,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sansu_kore/models/math_guide_model.dart';
+import 'package:sansu_kore/providers/guide_progress_provider.dart';
 
 /// ガイドカード（ホーム画面表示用）
-class MathGuideCard extends StatelessWidget {
+class MathGuideCard extends ConsumerWidget {
   final MathGuide guide;
   final VoidCallback onTap;
 
@@ -17,7 +18,10 @@ class MathGuideCard extends StatelessWidget {
   }) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final guideProgress = ref.watch(guideProgressProvider);
+    final isCompleted = guideProgress.isGuideCompleted(guide.id);
+
     return GestureDetector(
       onTap: onTap,
       child: Card(
@@ -29,71 +33,110 @@ class MathGuideCard extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(12),
             gradient: LinearGradient(
-              colors: [Colors.blue.shade50, Colors.blue.shade100],
+              colors: isCompleted
+                  ? [Colors.green.shade50, Colors.green.shade100]
+                  : [Colors.blue.shade50, Colors.blue.shade100],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
           ),
           padding: const EdgeInsets.all(16),
-          child: Row(
+          child: Stack(
             children: [
-              // 絵文字
-              Text(
-                guide.emoji,
-                style: const TextStyle(fontSize: 40),
-              ),
-              const SizedBox(width: 16),
+              Row(
+                children: [
+                  // 絵文字
+                  Text(
+                    guide.emoji,
+                    style: const TextStyle(fontSize: 40),
+                  ),
+                  const SizedBox(width: 16),
 
-              // テキスト情報
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      guide.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.blue,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      guide.subtitle,
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue.shade200.withOpacity(0.5),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: Text(
-                        '${guide.steps.length}ステップ',
-                        style: const TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.blue,
+                  // テキスト情報
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          guide.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                            color: isCompleted ? Colors.green : Colors.blue,
+                          ),
                         ),
-                      ),
+                        const SizedBox(height: 4),
+                        Text(
+                          guide.subtitle,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isCompleted
+                                ? Colors.green.shade200.withOpacity(0.5)
+                                : Colors.blue.shade200.withOpacity(0.5),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            '${guide.steps.length}ステップ',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: isCompleted ? Colors.green : Colors.blue,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
+                  ),
 
-              // 矢印
-              const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Colors.grey,
+                  // 矢印または完了マーク
+                  if (isCompleted)
+                    const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    )
+                  else
+                    const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: Colors.grey,
+                    ),
+                ],
               ),
+              // 完了バッジ
+              if (isCompleted)
+                Positioned(
+                  top: -8,
+                  right: -8,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.green,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.green.withOpacity(0.3),
+                          blurRadius: 8,
+                        ),
+                      ],
+                    ),
+                    child: const Icon(
+                      Icons.check,
+                      color: Colors.white,
+                      size: 12,
+                    ),
+                  ),
+                ),
             ],
           ),
         ),
@@ -103,7 +146,7 @@ class MathGuideCard extends StatelessWidget {
 }
 
 /// ガイド詳細表示ウィジェット
-class MathGuideDetail extends StatefulWidget {
+class MathGuideDetail extends ConsumerStatefulWidget {
   final MathGuide guide;
 
   const MathGuideDetail({
@@ -112,10 +155,10 @@ class MathGuideDetail extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MathGuideDetail> createState() => _MathGuideDetailState();
+  ConsumerState<MathGuideDetail> createState() => _MathGuideDetailState();
 }
 
-class _MathGuideDetailState extends State<MathGuideDetail> {
+class _MathGuideDetailState extends ConsumerState<MathGuideDetail> {
   late PageController _pageController;
   int _currentStep = 0;
 
@@ -123,6 +166,10 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    // Start tracking this guide
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(guideProgressProvider.notifier).startGuide(widget.guide);
+    });
   }
 
   @override
@@ -201,6 +248,12 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
               setState(() {
                 _currentStep = index;
               });
+              // Track step progress
+              ref.read(guideProgressProvider.notifier).updateGuideStep(
+                    widget.guide.id,
+                    index,
+                    false,
+                  );
             },
             children: widget.guide.steps.map((step) {
               return _buildStepContent(step);
@@ -282,6 +335,7 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
                           );
                         } else {
                           // 完了
+                          ref.read(guideProgressProvider.notifier).completeGuide(widget.guide.id);
                           Navigator.pop(context);
                         }
                       },
@@ -490,7 +544,7 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
 }
 
 /// ガイドカルーセル（ホーム画面用スライダー）
-class MathGuideCarousel extends StatefulWidget {
+class MathGuideCarousel extends ConsumerStatefulWidget {
   final List<MathGuide> guides;
   final Function(MathGuide) onGuideSelected;
 
@@ -501,10 +555,10 @@ class MathGuideCarousel extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MathGuideCarousel> createState() => _MathGuideCarouselState();
+  ConsumerState<MathGuideCarousel> createState() => _MathGuideCarouselState();
 }
 
-class _MathGuideCarouselState extends State<MathGuideCarousel> {
+class _MathGuideCarouselState extends ConsumerState<MathGuideCarousel> {
   late PageController _pageController;
   int _currentIndex = 0;
 
