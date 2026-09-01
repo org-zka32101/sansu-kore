@@ -2,7 +2,7 @@ name: Flutter CI
 
 on:
   push:
-    branches: [ master, main ]
+    branches: [ master, main, 'claude/**', 'feature/**' ]
   pull_request:
     branches: [ master, main ]
   workflow_dispatch:
@@ -51,6 +51,9 @@ jobs:
 
     - name: Clean build cache
       run: flutter clean && flutter pub get
+
+    - name: Run build runner
+      run: flutter pub run build_runner build --delete-conflicting-outputs
 
     - name: Create google-services.json from Secret
       env:
