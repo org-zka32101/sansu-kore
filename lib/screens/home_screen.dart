@@ -12,10 +12,13 @@ import '../providers/weekly_challenge_provider.dart';
 import '../providers/retention_notifications_provider.dart';
 import '../providers/daily_challenge_provider.dart';
 import '../models/quest_model.dart';
+import '../models/math_guide_model.dart';
 import '../screens/daily_bonus_screen.dart';
 import '../screens/math_guide_screen.dart';
+import '../screens/math_guide_detail_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/daily_challenge_widgets.dart';
+import '../widgets/math_guide_widgets.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -212,7 +215,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // 算数ガイドセクション
           SliverToBoxAdapter(
             child: _MathGuideSection(
-              onTap: () => Navigator.of(context).pushNamed('/math-guide'),
+              onGuideSelected: (guide) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => MathGuideDetailScreen(guide: guide),
+                  ),
+                );
+              },
             ),
           ),
 
@@ -677,89 +686,49 @@ class _SpecialModeSection extends StatelessWidget {
 
 /// 算数ガイドセクション
 class _MathGuideSection extends ConsumerWidget {
-  final VoidCallback onTap;
+  final Function(MathGuide) onGuideSelected;
 
-  const _MathGuideSection({required this.onTap});
+  const _MathGuideSection({required this.onGuideSelected});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider).currentProfile;
 
-    // 現在のグレードに基づいてティップを取得
-    final tip = profile != null
-        ? getRandomTipForGrade(profile.grade)
-        : getRandomTipForGrade(1);
+    // 現在のグレードレベルを取得
+    final gradeLevel = profile != null
+        ? _getGradeLevel(profile.grade)
+        : GradeLevel.grade1;
 
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              const Color(0xFF667EEA).withValues(alpha: 0.1),
-              const Color(0xFF764BA2).withValues(alpha: 0.1),
-            ],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: const Color(0xFF667EEA).withValues(alpha: 0.3),
-            width: 2,
-          ),
-        ),
-        child: Row(
-          children: [
-            // アイコン
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: const Color(0xFF667EEA).withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Text(
-                tip.emoji,
-                style: const TextStyle(fontSize: 28),
-              ),
-            ),
-            const SizedBox(width: 16),
-            // テキスト
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    tip.title,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    tip.description,
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ],
-              ),
-            ),
-            // 矢印
-            const Icon(
-              Icons.arrow_forward_ios,
-              color: Color(0xFF667EEA),
-              size: 18,
-            ),
-          ],
-        ),
-      ),
+    // 現在のグレード向けガイドを取得
+    final guides = MathGuide.getGuidesForGrade(gradeLevel);
+
+    if (guides.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return MathGuideCarousel(
+      guides: guides,
+      onGuideSelected: onGuideSelected,
     );
+  }
+
+  /// ユーザーグレード（1-6）をGradeLevel列挙型に変換
+  GradeLevel _getGradeLevel(int grade) {
+    switch (grade) {
+      case 1:
+        return GradeLevel.grade1;
+      case 2:
+        return GradeLevel.grade2;
+      case 3:
+        return GradeLevel.grade3;
+      case 4:
+        return GradeLevel.grade4;
+      case 5:
+        return GradeLevel.grade5;
+      case 6:
+        return GradeLevel.grade6;
+      default:
+        return GradeLevel.grade1;
+    }
   }
 }
