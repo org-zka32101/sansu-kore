@@ -15,6 +15,7 @@ class UserRankingData {
   final DateTime lastUpdatedAt;
   final int weeklyScore; // 週間スコア
   final int monthlyScore; // 月間スコア
+  final bool isNamePublic; // ランキングに名前を公開するか (デフォルト: false)
 
   const UserRankingData({
     required this.userId,
@@ -28,6 +29,7 @@ class UserRankingData {
     required this.lastUpdatedAt,
     this.weeklyScore = 0,
     this.monthlyScore = 0,
+    this.isNamePublic = false,
   });
 
   /// Firestore ドキュメントから UserRankingData を生成
@@ -49,6 +51,7 @@ class UserRankingData {
           : DateTime.now(),
       weeklyScore: data['weeklyScore'] as int? ?? 0,
       monthlyScore: data['monthlyScore'] as int? ?? 0,
+      isNamePublic: data['isNamePublic'] as bool? ?? false,
     );
   }
 
@@ -65,6 +68,7 @@ class UserRankingData {
       'lastUpdatedAt': Timestamp.fromDate(lastUpdatedAt),
       'weeklyScore': weeklyScore,
       'monthlyScore': monthlyScore,
+      'isNamePublic': isNamePublic,
     };
   }
 
@@ -81,6 +85,7 @@ class UserRankingData {
     DateTime? lastUpdatedAt,
     int? weeklyScore,
     int? monthlyScore,
+    bool? isNamePublic,
   }) {
     return UserRankingData(
       userId: userId ?? this.userId,
@@ -95,7 +100,25 @@ class UserRankingData {
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       weeklyScore: weeklyScore ?? this.weeklyScore,
       monthlyScore: monthlyScore ?? this.monthlyScore,
+      isNamePublic: isNamePublic ?? this.isNamePublic,
     );
+  }
+
+  /// ランキング表示用の名前を取得
+  /// isNamePublic が false の場合、ランク番号に基づいた匿名名を返す
+  /// isNamePublic が true の場合、実際のユーザー名を返す
+  String getDisplayName({int? anonymousIndex}) {
+    if (isNamePublic) {
+      return userName;
+    }
+    // 匿名表示: ランク番号を使用
+    return 'ユーザー ${rank > 0 ? rank : (anonymousIndex ?? 1)}';
+  }
+
+  /// 複数のランキングエントリから匿名表示用の表示名を生成
+  /// プライバシー設定を考慮したマッピング関数
+  static String generateDisplayName(UserRankingData ranking) {
+    return ranking.getDisplayName();
   }
 
   @override

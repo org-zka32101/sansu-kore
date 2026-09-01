@@ -493,7 +493,7 @@ class _RankingTile extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    userRanking.userName,
+                    userRanking.getDisplayName(),
                     style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 14,

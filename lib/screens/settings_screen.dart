@@ -8,9 +8,11 @@ import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/logout_provider.dart';
 import '../providers/sansu_profile_provider.dart';
+import '../providers/ranking_provider.dart';
 import '../providers/tts_provider.dart';
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
+import '../widgets/ranking_privacy_settings.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -251,6 +253,20 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ],
               ),
+            ),
+
+            const SizedBox(height: 16),
+
+            // ランキング プライバシー設定
+            _SectionHeader('🏆 ランキング設定'),
+            Consumer(
+              builder: (context, ref, child) {
+                final ranking = ref.watch(rankingProvider);
+                final isNamePublic = ranking.currentUserRanking?.isNamePublic ?? false;
+                return RankingPrivacySettings(
+                  initialValue: isNamePublic,
+                );
+              },
             ),
 
             const SizedBox(height: 16),

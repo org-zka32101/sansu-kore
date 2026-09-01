@@ -349,6 +349,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
         'averageSpeed': 0.0,
         'weeklyScore': 0,
         'monthlyScore': 0,
+        'isNamePublic': false, // デフォルトはプライベート
         'lastUpdatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -390,6 +391,48 @@ class RankingNotifier extends StateNotifier<RankingState> {
       await batch.commit();
     } catch (e) {
       print('Error initializing user ranking: $e');
+    }
+  }
+
+  /// ユーザーのランキング公開設定を更新
+  /// isNamePublic: true = 名前を公開、false = 匿名
+  Future<void> updateNamePublicSetting(bool isPublic) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) return;
+
+      // ユーザープロフィールを更新
+      await _firestore
+          .collection('users')
+          .doc(currentUser.uid)
+          .update({
+            'profile.isNamePublic': isPublic,
+          });
+
+      // ランキング各種を更新
+      final batch = _firestore.batch();
+
+      for (final category in ['global', 'weekly', 'monthly']) {
+        batch.update(
+          _firestore
+              .collection('rankings')
+              .doc(category)
+              .collection('users')
+              .doc(currentUser.uid),
+          {'isNamePublic': isPublic},
+        );
+      }
+
+      await batch.commit();
+
+      // ローカル状態を更新
+      if (state.currentUserRanking != null) {
+        state = state.copyWith(
+          currentUserRanking: state.currentUserRanking!.copyWith(isNamePublic: isPublic),
+        );
+      }
+    } catch (e) {
+      print('Error updating name public setting: $e');
     }
   }
 
