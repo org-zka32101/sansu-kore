@@ -52,9 +52,6 @@ jobs:
     - name: Clean build cache
       run: flutter clean && flutter pub get
 
-    - name: Run build runner
-      run: flutter pub run build_runner build --delete-conflicting-outputs
-
     - name: Create google-services.json from Secret
       env:
         GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON }}
