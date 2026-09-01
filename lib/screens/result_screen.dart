@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_core/shared_core.dart' show characterStateProvider;
-// import 'package:google_mobile_ads/google_mobile_ads.dart';  // TODO: Re-enable once SPM/CocoaPods conflict resolved
 import '../models/quest_model.dart';
 import '../models/ranking_model.dart';
 import 'package:shared_core/models/badge_model.dart';
@@ -35,7 +34,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   List<BadgeModel> _newBadges = [];
   UserRankingData? _userRanking;
   bool _saving = true;
-  // bool _showingInterstitialAd = false;  // TODO: Re-enable with interstitial ads
 
   @override
   void initState() {
@@ -45,8 +43,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       if (mounted) {
         setState(() => _saving = false);
         _confetti.play();
-        // TODO: インタースティシャル広告を読み込み（無料ユーザー向け）
-        // _loadInterstitialAdIfNeeded();
       }
     }).catchError((e) {
       if (mounted) {
@@ -57,44 +53,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       }
     });
   }
-
-  // TODO: インタースティシャル広告関連のメソッド（google_mobile_ads の SPM/CocoaPods 競合解決後）
-  // void _loadInterstitialAdIfNeeded() {
-  //   final premium = ref.read(premiumProvider);
-  //   if (!premium.isPremium && !premium.isTrialActive) {
-  //     ref.read(adsProvider.notifier).loadInterstitialAd();
-  //   }
-  // }
-  //
-  // void _showInterstitialAd() {
-  //   final premium = ref.read(premiumProvider);
-  //   if (premium.isPremium || premium.isTrialActive) {
-  //     // プレミアム・トライアル中ユーザーは直接解く
-  //     _retakeQuest();
-  //     return;
-  //   }
-  //
-  //   setState(() => _showingInterstitialAd = true);
-  //
-  //   ref.read(adsProvider.notifier).showInterstitialAd(
-  //     onAdDismissed: () {
-  //       // 広告が閉じられた後、「もう一度解く」ボタンを有効化
-  //       if (mounted) {
-  //         setState(() => _showingInterstitialAd = false);
-  //       }
-  //       // 自動的にステージに戻る
-  //       _retakeQuest();
-  //     },
-  //   );
-  // }
-  //
-  // void _retakeQuest() {
-  //   Navigator.of(context).pushNamedAndRemoveUntil(
-  //     '/quest',
-  //     (route) => route.settings.name == '/home',
-  //     arguments: widget.stage,
-  //   );
-  // }
 
   Future<void> _saveResult() async {
     final r = widget.result;
@@ -253,7 +211,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
   @override
   void dispose() {
     _confetti.dispose();
-    // ref.read(adsProvider.notifier).disposeInterstitialAd();  // TODO: Re-enable with interstitial ads
     super.dispose();
   }
 
@@ -326,23 +283,6 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   ],
                 ],
                 const SizedBox(height: 28),
-                // TODO: もう一度解くボタン（インタースティシャル広告付き）
-                // SizedBox(
-                //   width: double.infinity,
-                //   child: ElevatedButton.icon(
-                //     onPressed: _showingInterstitialAd ? null : _showInterstitialAd,
-                //     icon: const Icon(Icons.refresh),
-                //     label: _showingInterstitialAd
-                //         ? const Text('広告視聴中...')
-                //         : const Text('もう一度解く'),
-                //     style: ElevatedButton.styleFrom(
-                //       padding: const EdgeInsets.symmetric(vertical: 14),
-                //       backgroundColor: kAccentOrange,
-                //       disabledBackgroundColor: Colors.grey.shade300,
-                //     ),
-                //   ),
-                // ),
-                // const SizedBox(height: 12),
                 Row(
                   children: [
                     Expanded(
