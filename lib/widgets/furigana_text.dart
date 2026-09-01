@@ -1,102 +1,146 @@
 import 'package:flutter/material.dart';
 
-class _Seg {
-  final String text;
-  final String? ruby;
-  const _Seg(this.text, [this.ruby]);
-}
-
-/// テキスト内の {漢字|ふりがな} マークアップをルビ付きで描画するウィジェット。
-/// マークアップなしの文字列は通常の Text として描画する。
+/// ふりがな（ルビ）付きテキストウィジェット
+/// 形式: {漢字|ふりがな} または Map<String, String> を使用
 class FuriganaText extends StatelessWidget {
   final String text;
-  final double fontSize;
-  final Color color;
-  final FontWeight fontWeight;
-  final TextAlign textAlign;
+  final TextStyle? style;
+  final TextAlign? textAlign;
+  final int? maxLines;
+  final TextOverflow? overflow;
+  final double rubyFontSizeRatio; // ふりがなのフォントサイズ比率（デフォルト: 0.55）
+  final double rubyOffsetRatio; // ふりがなのオフセット比率（デフォルト: 0.8）
 
   const FuriganaText(
     this.text, {
+    this.style,
+    this.textAlign,
+    this.maxLines,
+    this.overflow,
+    this.rubyFontSizeRatio = 0.55,
+    this.rubyOffsetRatio = 0.8,
     super.key,
-    this.fontSize = 14.0,
-    this.color = const Color(0xFF2C3E50),
-    this.fontWeight = FontWeight.normal,
-    this.textAlign = TextAlign.start,
   });
 
-  static final _pattern = RegExp(r'\{([^|{]+)\|([^}]+)\}');
+  /// マークアップテキストを解析してTextSpanを生成
+  /// 形式: {漢字|ふりがな}
+  /// 例: {算数|さんすう}、{漢字|かんじ}
+  static List<TextSpan> parseMarkup(
+    String text, {
+    TextStyle? baseStyle,
+    double rubyFontSizeRatio = 0.55,
+    double rubyOffsetRatio = 0.8,
+  }) {
+    final spans = <TextSpan>[];
+    final regex = RegExp(r'\{([^|]+)\|([^}]+)\}');
+    int lastEnd = 0;
 
-  List<_Seg> _parse() {
-    final out = <_Seg>[];
-    int pos = 0;
-    for (final m in _pattern.allMatches(text)) {
-      if (m.start > pos) out.add(_Seg(text.substring(pos, m.start)));
-      out.add(_Seg(m.group(1)!, m.group(2)));
-      pos = m.end;
+    final matches = regex.allMatches(text);
+
+    for (final match in matches) {
+      // マッチ前のテキスト
+      if (match.start > lastEnd) {
+        spans.add(TextSpan(
+          text: text.substring(lastEnd, match.start),
+          style: baseStyle,
+        ));
+      }
+
+      // マッチした部分（漢字とふりがな）
+      final kanji = match.group(1)!; // 漢字
+      final furigana = match.group(2)!; // ふりがな
+
+      final baseFontSize = baseStyle?.fontSize ?? 14;
+      final rubyFontSize = baseFontSize * rubyFontSizeRatio;
+
+      // ふりがな付き テキストスパン
+      spans.add(
+        TextSpan(
+          children: [
+            // ふりがな（上に配置）
+            WidgetSpan(
+              alignment: PlaceholderAlignment.top,
+              child: Transform.translate(
+                offset: Offset(0, -rubyFontSize * rubyOffsetRatio),
+                child: Text(
+                  furigana,
+                  style: (baseStyle ?? const TextStyle()).copyWith(
+                    fontSize: rubyFontSize,
+                    color: Colors.grey.shade700,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            // 漢字（基本テキスト）
+            TextSpan(
+              text: '\n$kanji',
+              style: baseStyle,
+            ),
+          ],
+        ),
+      );
+
+      lastEnd = match.end;
     }
-    if (pos < text.length) out.add(_Seg(text.substring(pos)));
-    return out;
+
+    // 最後のテキスト
+    if (lastEnd < text.length) {
+      spans.add(TextSpan(
+        text: text.substring(lastEnd),
+        style: baseStyle,
+      ));
+    }
+
+    return spans.isEmpty ? [TextSpan(text: text, style: baseStyle)] : spans;
   }
 
   @override
   Widget build(BuildContext context) {
-    final segs = _parse();
-    if (segs.every((s) => s.ruby == null)) {
-      return Text(
-        text,
-        style: TextStyle(fontSize: fontSize, color: color, fontWeight: fontWeight),
-        textAlign: textAlign,
-      );
-    }
-
-    final rubySize = (fontSize * 0.45).clamp(8.0, 12.0);
-    final rubyLineH = rubySize * 1.5;
-
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.end,
-      children: segs.map((s) {
-        if (s.ruby == null) {
-          return Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(height: rubyLineH),
-              Text(
-                s.text,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  color: color,
-                  fontWeight: fontWeight,
-                  height: 1.2,
-                ),
-              ),
-            ],
-          );
-        }
-        return Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Text(
-              s.ruby!,
-              style: TextStyle(
-                fontSize: rubySize,
-                color: color.withAlpha(180),
-                height: rubyLineH / rubySize,
-                letterSpacing: 0.3,
-              ),
-            ),
-            Text(
-              s.text,
-              style: TextStyle(
-                fontSize: fontSize,
-                color: color,
-                fontWeight: fontWeight,
-                height: 1.2,
-              ),
-            ),
-          ],
-        );
-      }).toList(),
+    final spans = parseMarkup(
+      text,
+      baseStyle: style,
+      rubyFontSizeRatio: rubyFontSizeRatio,
+      rubyOffsetRatio: rubyOffsetRatio,
     );
+
+    return RichText(
+      text: TextSpan(children: spans),
+      textAlign: textAlign ?? TextAlign.start,
+      maxLines: maxLines,
+      overflow: overflow ?? TextOverflow.clip,
+    );
+  }
+}
+
+/// ふりがなプリプロセッサー
+/// マークアップなしにテキストを処理する場合
+class FuriganaProcessor {
+  /// テキストに{漢字|ふりがな}形式のマークアップを追加
+  /// furiganaMap: {'漢字': 'ふりがな'} の辞書
+  static String addFuriganaMarkup(
+    String text,
+    Map<String, String> furiganaMap,
+  ) {
+    String result = text;
+
+    // 辞書の各エントリに対してマークアップを追加
+    furiganaMap.forEach((kanji, furigana) {
+      // 単語を逃がしてから置換（重複置換を避ける）
+      result = result.replaceAll(kanji, '{$kanji|$furigana}');
+    });
+
+    return result;
+  }
+
+  /// マークアップを削除してプレーンテキストに変換
+  static String removeMarkup(String text) {
+    return text
+        .replaceAll(RegExp(r'\{([^|]+)\|([^}]+)\}'), '$1'); // {漢字|ふりがな} → 漢字
+  }
+
+  /// マークアップが含まれているか判定
+  static bool hasMarkup(String text) {
+    return RegExp(r'\{[^|]+\|[^}]+\}').hasMatch(text);
   }
 }
