@@ -14,6 +14,7 @@ import '../providers/profile_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
 import '../providers/ranking_provider.dart';
+import '../providers/retention_notifications_provider.dart';
 // import '../providers/ads_provider.dart';  // TODO: Re-enable with google_mobile_ads
 // import '../providers/premium_provider.dart';  // TODO: Re-enable with ads
 import '../services/notification_service.dart';
@@ -185,6 +186,12 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     await ref
         .read(characterStateProvider.notifier)
         .checkUnlocks(totalStages);
+
+    // リテンション通知：クエスト完了カウント増加
+    if (r.isPassed) {
+      await ref.read(retentionNotificationsProvider.notifier)
+          .incrementQuestsCompletedSinceReview();
+    }
 
     // ランキングバッジのチェック
     // 更新後に最新ランキング情報を再取得してバッジ判定
