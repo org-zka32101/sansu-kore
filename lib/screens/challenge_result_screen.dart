@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:confetti/confetti.dart';
 import 'package:sansu_kore/models/game_mode_model.dart';
+import 'package:sansu_kore/models/sound_model.dart';
+import 'package:sansu_kore/models/vfx_model.dart';
 import 'package:sansu_kore/providers/game_mode_provider.dart';
+import 'package:sansu_kore/providers/sound_provider.dart';
+import 'package:sansu_kore/providers/vfx_provider.dart';
 
 /// チャレンジ結果画面
 /// ゲーム完了後のスコア、コイン、バッジを表示
@@ -40,6 +44,25 @@ class _ChallengeResultScreenState extends ConsumerState<ChallengeResultScreen>
     }
 
     _scoreAnimController.forward();
+
+    // Trigger VFX and sounds after frame
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        _triggerResultEffects();
+      }
+    });
+  }
+
+  /// 結果表示時のVFXと音声効果をトリガー
+  void _triggerResultEffects() {
+    // Play celebration sounds and effects based on score
+    if (widget.result.correctRate >= 0.8) {
+      // High score: play perfect sound
+      ref.read(soundPlaybackProvider.notifier).playSound(SoundEffect.perfect);
+    } else if (widget.result.correctRate >= 0.6) {
+      // Good score: play correct sound
+      ref.read(soundPlaybackProvider.notifier).playSound(SoundEffect.correct);
+    }
   }
 
   @override
