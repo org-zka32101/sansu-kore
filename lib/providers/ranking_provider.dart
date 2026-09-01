@@ -16,7 +16,7 @@ class RankingState {
   final String? error;
   final DateTime lastUpdatedAt;
 
-  const RankingState({
+  RankingState({
     this.globalRanking = const [],
     this.weeklyRanking = const [],
     this.monthlyRanking = const [],
@@ -24,8 +24,8 @@ class RankingState {
     this.currentUserRanking,
     this.isLoading = false,
     this.error,
-    this.lastUpdatedAt = const DateTime(1970, 1, 1),
-  });
+    DateTime? lastUpdatedAt,
+  }) : lastUpdatedAt = lastUpdatedAt ?? DateTime.utc(1970, 1, 1);
 
   RankingState copyWith({
     List<UserRankingData>? globalRanking,
