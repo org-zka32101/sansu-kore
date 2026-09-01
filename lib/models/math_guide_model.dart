@@ -266,6 +266,192 @@ class MathGuide {
       ],
       relatedConcepts: ['かけ算', 'グループ分け'],
     ),
+
+    // Grade 5 - Fractions
+    'fractions_grade5': MathGuide(
+      id: 'fractions_grade5',
+      concept: MathConcept.fractions,
+      gradeLevel: GradeLevel.grade5,
+      title: '分数の基本',
+      subtitle: '5年生向け',
+      overview: '分数は、ケーキやピザのように全体を等しく分けた時の一部を表します。',
+      emoji: '🍰',
+      steps: [
+        GuideStep(
+          stepNumber: 1,
+          title: '分数とは何か',
+          description: '分数は「全体をいくつに分けたうちの、いくつ分か」を表す数です。',
+          example: 'ピザを4等分して2ピース食べた → 2/4（全体の1/2）',
+          visualHint: 'ピザやケーキを分割する図で表現',
+          tips: [
+            '上の数字 = 分子（何個か）',
+            '下の数字 = 分母（全体いくつ分か）',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 2,
+          title: '分数の大きさ比べ',
+          description: '分数の大きさは、分母と分子の関係で決まります。',
+          example: '1/2 > 1/4 （同じ全体を分ける時、分けた数が少ないほど大きい）',
+          visualHint: '同じ大きさのケーキを2等分と4等分に分けた図',
+          tips: [
+            '分母が小さい = ピース1個が大きい',
+            '分子が大きい = 食べた量が多い',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 3,
+          title: '通分と約分',
+          description: '異なる分母の分数を足し引きするには、分母を同じにします。',
+          example: '1/2 + 1/4 = 2/4 + 1/4 = 3/4',
+          visualHint: '分母を合わせるイメージ図',
+          tips: [
+            '通分：分母を同じにする',
+            '約分：分子分母を同じ数で割る',
+          ],
+        ),
+      ],
+      relatedConcepts: ['割り算', '小数'],
+    ),
+
+    // Grade 5 - Decimals
+    'decimals_grade5': MathGuide(
+      id: 'decimals_grade5',
+      concept: MathConcept.decimals,
+      gradeLevel: GradeLevel.grade5,
+      title: '小数の仕組み',
+      subtitle: '5年生向け',
+      overview: '小数は整数では表せない、1より小さい数や中間の数を表します。',
+      emoji: '🔢',
+      steps: [
+        GuideStep(
+          stepNumber: 1,
+          title: '小数とは',
+          description: '小数は、1を10等分、100等分…した時の一部の大きさです。',
+          example: '0.5 = 5/10（1の5個分），0.25 = 25/100（1の25個分）',
+          visualHint: '目盛りのついた数直線で0と1の間を分割',
+          tips: [
+            '小数点の右 = 1より小さい数',
+            '0.1 = 1/10（10分の1）',
+            '0.01 = 1/100（100分の1）',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 2,
+          title: '小数の足し算・引き算',
+          description: '小数も整数と同じように足し引きできます。ただし、小数点の位置に注意します。',
+          example: '2.3 + 1.5 = 3.8 （小数点の位置を揃える）',
+          visualHint: '数直線上での移動を示す図',
+          tips: [
+            '小数点の位置をそろえて計算する',
+            '1 + 0.5 = 1.5 （1と0.5をセットで考える）',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 3,
+          title: '小数とお金・メートル',
+          description: '日常生活で小数は、お金や長さに使われています。',
+          example: '150円 = 1.5百円，1.5m = 150cm',
+          tips: [
+            'お金：100円 = 1，1円 = 0.01',
+            '長さ：1m = 1, 1cm = 0.01',
+          ],
+        ),
+      ],
+      relatedConcepts: ['分数', 'お金', 'メートル'],
+    ),
+
+    // Grade 6 - Geometry
+    'geometry_grade6': MathGuide(
+      id: 'geometry_grade6',
+      concept: MathConcept.geometry,
+      gradeLevel: GradeLevel.grade6,
+      title: '図形の面積と体積',
+      subtitle: '6年生向け',
+      overview: '図形がどれくらい大きいかを、面積と体積で表すことができます。',
+      emoji: '📐',
+      steps: [
+        GuideStep(
+          stepNumber: 1,
+          title: '面積とは',
+          description: '面積は、図形の広さのことです。1cm × 1cm の正方形（1㎠）がいくつ入るか数えます。',
+          example: 'たて3cm ×よこ4cm の長方形 = 3×4 = 12㎠',
+          visualHint: 'グリッド上に図形を描き、マスを数える',
+          tips: [
+            '長方形の面積 = 縦 × 横',
+            '三角形の面積 = 底辺 × 高さ ÷ 2',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 2,
+          title: '体積とは',
+          description: '体積は、立体図形がどれくらいの空間を占めているかです。1cm × 1cm × 1cm の立方体（1㎤）で測ります。',
+          example: '縦2cm × 横3cm × 高さ4cm の直方体 = 2×3×4 = 24㎤',
+          visualHint: '積み木を積み上げた図',
+          tips: [
+            '直方体の体積 = 縦 × 横 × 高さ',
+            '容積（液体が入る量）も同じ式で計算',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 3,
+          title: '周の長さと表面積',
+          description: '周の長さは図形のふちの長さ、表面積は立体の全ての面の面積の合計です。',
+          example: '正方形のふち：1辺4cm × 4 = 16cm',
+          tips: [
+            '周の長さ = 全てのふちを足す',
+            '表面積 = 全ての面の面積を足す',
+          ],
+        ),
+      ],
+      relatedConcepts: ['正方形', '三角形', '立方体'],
+    ),
+
+    // Grade 6 - Word Problems
+    'wordProblems_grade6': MathGuide(
+      id: 'wordProblems_grade6',
+      concept: MathConcept.wordProblems,
+      gradeLevel: GradeLevel.grade6,
+      title: '文章問題の解き方',
+      subtitle: '6年生向け',
+      overview: '文章問題は、日常の状況を数学で表して、答えを求める問題です。',
+      emoji: '📖',
+      steps: [
+        GuideStep(
+          stepNumber: 1,
+          title: '問題を読み取る',
+          description: '文章問題を解く時は、まず何がわかっていて、何を求めるのかを整理します。',
+          example: '「りんごが5個、みかんが3個あります。全部でいくつ？」 → わかっている：りんご5個、みかん3個 求める：全部の個数',
+          visualHint: '情報を四角で囲むメモの取り方',
+          tips: [
+             '「全部で」「残り」などの言葉に注意',
+            'わかっていることと求めることを分ける',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 2,
+          title: '式を立てる',
+          description: '読み取った情報から、計算式を作ります。',
+          example: '5個 + 3個 = 8個（足し算），10個 - 3個 = 7個（引き算）',
+          visualHint: '図や表を使って情報を整理',
+          tips: [
+            '図や表に書いてみると分かりやすい',
+            '式は「何 + 何 = 答え」の形で',
+          ],
+        ),
+        GuideStep(
+          stepNumber: 3,
+          title: '計算して検算する',
+          description: '式から答えを計算し、その答えが問題として合っているか確認します。',
+          example: '5 + 3 = 8，確認：「りんご5個とみかん3個で全部8個」→正しい！',
+          tips: [
+            '計算ミスがないか2回計算する',
+            '答えが問題の状況に合っているか確認する',
+          ],
+        ),
+      ],
+      relatedConcepts: ['足し算', '引き算', 'かけ算', '割り算'],
+    ),
   };
 }
 
