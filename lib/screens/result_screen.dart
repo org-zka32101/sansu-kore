@@ -185,6 +185,21 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         .read(characterStateProvider.notifier)
         .checkUnlocks(totalStages);
 
+    // ランキングバッジのチェック
+    // 更新後に最新ランキング情報を再取得してバッジ判定
+    await ref.read(rankingProvider.notifier).fetchCurrentUserRanking();
+    final rankingBadges = ref.read(rankingProvider.notifier).checkRankingBadges();
+
+    // ランキングバッジは別途追跡可能（将来的に拡張）
+    if (rankingBadges['ranking_top10'] == true) {
+      print('🏆 ランキングトップ10達成！');
+    } else if (rankingBadges['ranking_top100'] == true) {
+      print('🏆 ランキングトップ100達成！');
+    }
+    if (rankingBadges['weekly_ranking_win'] == true) {
+      print('👑 週間チャンピオン達成！');
+    }
+
     if (mounted) {
       setState(() {
         _newBadges = newBadges;

@@ -312,6 +312,25 @@ class RankingNotifier extends StateNotifier<RankingState> {
     await batch.commit();
   }
 
+  /// ランキングバッジの取得状況をチェック
+  /// ユーザーのランク情報からバッジ受取可能かを判定
+  Map<String, bool> checkRankingBadges() {
+    final userRanking = state.currentUserRanking;
+    if (userRanking == null) {
+      return {
+        'ranking_top100': false,
+        'ranking_top10': false,
+        'weekly_ranking_win': false,
+      };
+    }
+
+    return {
+      'ranking_top100': userRanking.rank <= 100,
+      'ranking_top10': userRanking.rank <= 10,
+      'weekly_ranking_win': userRanking.rank == 1,
+    };
+  }
+
   /// 初回ランキングデータを初期化（新規ユーザー用）
   Future<void> initializeUserRanking({
     required String userId,
