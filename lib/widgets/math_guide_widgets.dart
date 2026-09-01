@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sansu_kore/models/math_guide_model.dart';
 import 'package:sansu_kore/providers/guide_progress_provider.dart';
+import 'package:sansu_kore/widgets/furigana_widgets.dart';
 
 /// ガイドカード（ホーム画面表示用）
 class MathGuideCard extends ConsumerWidget {
@@ -207,13 +208,14 @@ class _MathGuideDetailState extends ConsumerState<MathGuideDetail> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          widget.guide.title,
+                        FuriganaTitle(
+                          text: widget.guide.title,
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
+                          furiganaScale: 0.55,
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -374,13 +376,14 @@ class _MathGuideDetailState extends ConsumerState<MathGuideDetail> {
               color: Colors.blue.shade100,
               borderRadius: BorderRadius.circular(6),
             ),
-            child: Text(
-              'ステップ ${step.stepNumber}: ${step.title}',
+            child: FuriganaTitle(
+              text: 'ステップ ${step.stepNumber}: ${step.title}',
               style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
                 color: Colors.blue.shade700,
               ),
+              furiganaScale: 0.5,
             ),
           ),
           const SizedBox(height: 24),
