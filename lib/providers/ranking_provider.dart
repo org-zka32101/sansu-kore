@@ -24,7 +24,7 @@ class RankingState {
     this.currentUserRanking,
     this.isLoading = false,
     this.error,
-    this.lastUpdatedAt = const DateTime.fromMicrosecondsSinceEpoch(0),
+    this.lastUpdatedAt = const DateTime(1970, 1, 1),
   });
 
   RankingState copyWith({
@@ -340,7 +340,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
   }) async {
     try {
       final now = DateTime.now();
-      const data = {
+      final data = {
         'userName': 'ユーザー',
         'avatarUrl': '',
         'score': 0,
