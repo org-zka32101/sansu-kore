@@ -7,6 +7,7 @@ import 'package:sansu_kore/models/vfx_model.dart';
 import 'package:sansu_kore/providers/game_mode_provider.dart';
 import 'package:sansu_kore/providers/sound_provider.dart';
 import 'package:sansu_kore/providers/vfx_provider.dart';
+import 'package:sansu_kore/widgets/vfx_widgets.dart';
 
 /// チャレンジ結果画面
 /// ゲーム完了後のスコア、コイン、バッジを表示
@@ -56,12 +57,16 @@ class _ChallengeResultScreenState extends ConsumerState<ChallengeResultScreen>
   /// 結果表示時のVFXと音声効果をトリガー
   void _triggerResultEffects() {
     // Play celebration sounds and effects based on score
+    final soundPlayback = ref.read(soundPlaybackProvider.notifier);
+    final vfxPlayback = ref.read(vfxPlaybackProvider.notifier);
+
     if (widget.result.correctRate >= 0.8) {
-      // High score: play perfect sound
-      ref.read(soundPlaybackProvider.notifier).playSound(SoundEffect.perfect);
+      // High score: play perfect sound and VFX
+      soundPlayback.playSound(SoundEffect.perfect);
+      vfxPlayback.playVFX(VFXPreset.perfect);
     } else if (widget.result.correctRate >= 0.6) {
       // Good score: play correct sound
-      ref.read(soundPlaybackProvider.notifier).playSound(SoundEffect.correct);
+      soundPlayback.playSound(SoundEffect.correct);
     }
   }
 
@@ -79,59 +84,61 @@ class _ChallengeResultScreenState extends ConsumerState<ChallengeResultScreen>
         Navigator.of(context).popUntil((route) => route.isFirst);
         return false;
       },
-      child: Scaffold(
-        body: Stack(
-          children: [
-            // 背景グラデーション
-            Container(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    _getModeColor(widget.result.gameMode),
-                    _getModeColor(widget.result.gameMode).withOpacity(0.5),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+      child: VFXLayer(
+        child: Scaffold(
+          body: Stack(
+            children: [
+              // 背景グラデーション
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      _getModeColor(widget.result.gameMode),
+                      _getModeColor(widget.result.gameMode).withOpacity(0.5),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
                 ),
               ),
-            ),
 
-            // コンテンツ
-            SingleChildScrollView(
-              child: Padding(
-                padding: const EdgeInsets.all(16),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const SizedBox(height: 40),
-                    _buildResultHeader(),
-                    const SizedBox(height: 32),
-                    _buildScoreCard(),
-                    const SizedBox(height: 24),
-                    _buildStatsGrid(),
-                    const SizedBox(height: 24),
-                    _buildRewardsSection(),
-                    const SizedBox(height: 24),
-                    _buildActionButtons(context),
-                    const SizedBox(height: 40),
-                  ],
+              // コンテンツ
+              SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 40),
+                      _buildResultHeader(),
+                      const SizedBox(height: 32),
+                      _buildScoreCard(),
+                      const SizedBox(height: 24),
+                      _buildStatsGrid(),
+                      const SizedBox(height: 24),
+                      _buildRewardsSection(),
+                      const SizedBox(height: 24),
+                      _buildActionButtons(context),
+                      const SizedBox(height: 40),
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // パーティクル効果
-            Align(
-              alignment: Alignment.topCenter,
-              child: ConfettiWidget(
-                confettiController: _confettiController,
-                blastDirectionality: BlastDirectionality.explosive,
-                particleDrag: 0.05,
-                emissionFrequency: 0.05,
-                numberOfParticles: 50,
-                gravity: 0.1,
+              // パーティクル効果
+              Align(
+                alignment: Alignment.topCenter,
+                child: ConfettiWidget(
+                  confettiController: _confettiController,
+                  blastDirectionality: BlastDirectionality.explosive,
+                  particleDrag: 0.05,
+                  emissionFrequency: 0.05,
+                  numberOfParticles: 50,
+                  gravity: 0.1,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
