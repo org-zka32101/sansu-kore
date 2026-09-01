@@ -54,7 +54,14 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
           ],
         ),
       ),
-      body: TabBarView(
+      body: Column(
+        children: [
+          // ユーザーランキング統計セクション
+          if (rankingState.currentUserRanking != null)
+            _UserStatsCard(userRanking: rankingState.currentUserRanking!),
+          // タブ別ランキング表示
+          Expanded(
+            child: TabBarView(
         controller: _tabController,
         children: [
           // グローバルランキング
@@ -98,7 +105,134 @@ class _RankingScreenState extends ConsumerState<RankingScreen>
             },
           ),
         ],
+            ),
+          ),
+        ],
       ),
+    );
+  }
+}
+
+/// ユーザー統計カード
+class _UserStatsCard extends StatelessWidget {
+  final UserRankingData userRanking;
+
+  const _UserStatsCard({required this.userRanking});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade300, Colors.blue.shade600],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade600.withAlpha(100),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'あなたの成績',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(200),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  '${userRanking.rank}位',
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              _StatItem(
+                icon: '🎯',
+                label: '正答率',
+                value: '${(userRanking.correctRate * 100).toStringAsFixed(1)}%',
+              ),
+              _StatItem(
+                icon: '💯',
+                label: 'スコア',
+                value: '${userRanking.score}',
+              ),
+              _StatItem(
+                icon: '⚡',
+                label: '速度',
+                value: '${userRanking.averageSpeed.toStringAsFixed(1)}s',
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 統計アイテム
+class _StatItem extends StatelessWidget {
+  final String icon;
+  final String label;
+  final String value;
+
+  const _StatItem({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          icon,
+          style: const TextStyle(fontSize: 20),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.bold,
+            fontSize: 14,
+          ),
+        ),
+        Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 10,
+          ),
+        ),
+      ],
     );
   }
 }
