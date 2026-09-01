@@ -141,7 +141,7 @@ class GameSessionNotifier extends StateNotifier<GameSessionState> {
     final session = state.currentSession;
     if (session == null) return;
 
-    session.status = GameModeStatus.paused;
+    session.pause();
     state = state.copyWith(currentSession: session);
   }
 
@@ -150,7 +150,7 @@ class GameSessionNotifier extends StateNotifier<GameSessionState> {
     final session = state.currentSession;
     if (session == null) return;
 
-    session.status = GameModeStatus.active;
+    session.resume();
     state = state.copyWith(currentSession: session);
   }
 }

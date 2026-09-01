@@ -1,42 +1,22 @@
-// Game Mode Models for Challenge Modes
-// Supports: Normal, Time Attack, Survival, Flash, Marathon
+// Game Mode Model - Challenge Mode System for Sansu Kore
+// Defines 5 game modes with unique mechanics and scoring systems
 
-import 'package:flutter/foundation.dart';
+import 'package:uuid/uuid.dart';
 
-enum GameMode {
-  normal,      // 通常モード: 3択から選ぶ
-  timeAttack,  // タイムアタック: 制限時間内に解く
-  survival,    // サバイバル: ミス3回でGAME OVER
-  flash,       // フラッシュ: 高速出題
-  marathon,    // マラソン: 100問連続
-}
+enum GameMode { normal, timeAttack, survival, flash, marathon }
 
-enum GameModeStatus {
-  active,      // プレイ中
-  paused,      // 一時停止
-  completed,   // 完了
-  failed,      // 失敗
-}
+enum GameModeStatus { idle, active, paused, completed, failed }
 
-/// ゲームモード設定
+/// Configuration for each game mode
 class GameModeConfig {
   final GameMode mode;
-  final String displayName;      // 表示名（日本語）
-  final String description;      // 説明文
-  final String? emoji;           // 絵文字
-
-  // タイムアタック設定
-  final int? timeLimit;          // 秒単位（null = 無制限）
-
-  // サバイバル設定
-  final int? maxMisses;          // 最大ミス数（3推奨）
-
-  // フラッシュ設定
-  final int? questionsPerRound;  // 1ラウンドの問題数（5-10推奨）
-  final int? roundDelayMs;       // 問題間の表示時間（ms）
-
-  // マラソン設定
-  final int? targetQuestionsCount; // 目標問題数（100推奨）
+  final String displayName;
+  final String description;
+  final String? emoji;
+  final int? timeLimit; // seconds per question
+  final int? maxMisses; // max wrong answers allowed
+  final int questionsPerRound;
+  final int? targetQuestionsCount; // total questions for this mode
 
   const GameModeConfig({
     required this.mode,
@@ -45,83 +25,80 @@ class GameModeConfig {
     this.emoji,
     this.timeLimit,
     this.maxMisses,
-    this.questionsPerRound,
-    this.roundDelayMs,
+    this.questionsPerRound = 5,
     this.targetQuestionsCount,
   });
 
-  /// 静的コンフィグ: 全ゲームモード
-  static const List<GameModeConfig> allModes = [
+  /// Get configuration for a specific game mode
+  static GameModeConfig? getConfig(GameMode mode) {
+    return allModes.firstWhere(
+      (config) => config.mode == mode,
+      orElse: () => _defaultConfig,
+    );
+  }
+
+  /// Default configuration
+  static const _defaultConfig = GameModeConfig(
+    mode: GameMode.normal,
+    displayName: 'ノーマル',
+    description: '基本的な学習モード',
+    emoji: '📚',
+  );
+
+  /// All mode configurations
+  static const allModes = [
     GameModeConfig(
       mode: GameMode.normal,
-      displayName: 'ノーマルモード',
-      description: '3択から正解を選ぼう！制限時間なし。基本的な学習モード。',
-      emoji: '📖',
+      displayName: 'ノーマル',
+      description: '基本的な学習モード。ゆっくり解いて力をつけよう！',
+      emoji: '📚',
+      questionsPerRound: 5,
+      targetQuestionsCount: 10,
     ),
     GameModeConfig(
       mode: GameMode.timeAttack,
       displayName: 'タイムアタック',
-      description: '制限時間内に解く！速度が高いほど高スコア。速さと正確性の勝負。',
+      description: '時間制限内に正解を目指す。速度と正確性を両立させよう！',
       emoji: '⏱️',
-      timeLimit: 60,  // 60秒/問題
+      timeLimit: 10,
+      questionsPerRound: 5,
+      targetQuestionsCount: 8,
     ),
     GameModeConfig(
       mode: GameMode.survival,
       displayName: 'サバイバル',
-      description: 'ミス3回でGAME OVER！どこまで続けられるか。連続正解でスコア加算。',
+      description: 'ミスはNG！連続正解を目指す究極のチャレンジ。',
       emoji: '💪',
       maxMisses: 3,
+      questionsPerRound: 5,
+      targetQuestionsCount: 20,
     ),
     GameModeConfig(
       mode: GameMode.flash,
-      displayName: 'フラッシュモード',
-      description: '高速出題！反応速度がカギ。短い時間で判断力を鍛える。',
+      displayName: 'フラッシュ',
+      description: '瞬時の判断が勝負。反応速度を鍛える！',
       emoji: '⚡',
-      questionsPerRound: 10,
-      roundDelayMs: 1000,
+      timeLimit: 5,
+      questionsPerRound: 5,
+      targetQuestionsCount: 15,
     ),
     GameModeConfig(
       mode: GameMode.marathon,
       displayName: 'マラソン',
-      description: '100問連続チャレンジ！持久力と集中力の最終テスト。',
+      description: '最大100問！最強の持久力と集中力を試す。',
       emoji: '🏃',
+      questionsPerRound: 10,
       targetQuestionsCount: 100,
     ),
   ];
-
-  /// モード設定を取得
-  static GameModeConfig? getConfig(GameMode mode) {
-    try {
-      return allModes.firstWhere((m) => m.mode == mode);
-    } catch (e) {
-      return null;
-    }
-  }
 }
 
-/// ゲーム内の問題（質問）
-class GameQuestion {
-  final String id;
-  final String question;
-  final List<String> choices;
-  final int correctIndex;
-  final String? explanation;
-
-  GameQuestion({
-    required this.id,
-    required this.question,
-    required this.choices,
-    required this.correctIndex,
-    this.explanation,
-  });
-}
-
-/// ユーザーの回答
+/// Represents a user's answer to a quiz question
 class UserAnswer {
   final String questionId;
-  final int? selectedIndex;    // null = 未回答
+  final int? selectedIndex;
   final bool isCorrect;
-  final int responseTime;       // ミリ秒
+  final int responseTime; // milliseconds
   final DateTime answeredAt;
 
   UserAnswer({
@@ -133,26 +110,20 @@ class UserAnswer {
   });
 }
 
-/// ゲームセッション状態
+/// Represents an active game session
 class GameSession {
   final String sessionId;
   final GameMode gameMode;
   final int gradeLevel;
-  final String? topicType;              // null = ランダム
+  final String? topicType;
   final DateTime startedAt;
 
-  // セッション進行状況
   int correctAnswers = 0;
   int totalQuestions = 0;
   int totalMisses = 0;
-  int currentStreak = 0;                // 連続正解数
-  int maxStreak = 0;                    // 最大連続正解
-  int elapsedSeconds = 0;               // 経過時間（秒）
-
-  // 回答履歴
+  int currentStreak = 0;
+  int maxStreak = 0;
   List<UserAnswer> answers = [];
-
-  // ゲーム状態
   GameModeStatus status = GameModeStatus.active;
   DateTime? completedAt;
 
@@ -164,174 +135,186 @@ class GameSession {
     required this.startedAt,
   });
 
-  /// 正答率を計算
-  double get correctRate {
-    if (totalQuestions == 0) return 0.0;
-    return correctAnswers / totalQuestions;
+  // Getters
+  double get correctRate => totalQuestions == 0 ? 0 : correctAnswers / totalQuestions;
+
+  int get elapsedSeconds {
+    final end = completedAt ?? DateTime.now();
+    return end.difference(startedAt).inSeconds;
   }
 
-  /// 平均回答時間（秒）を計算
   double get averageResponseTime {
-    if (answers.isEmpty) return 0.0;
-    final totalMs = answers.fold<int>(0, (sum, a) => sum + a.responseTime);
-    return (totalMs / answers.length) / 1000.0;
+    if (answers.isEmpty) return 0;
+    final total = answers.fold<int>(0, (sum, a) => sum + a.responseTime);
+    return total / answers.length / 1000; // convert to seconds
   }
 
-  /// ゲーム終了
+  /// Complete the session successfully
   void complete() {
     status = GameModeStatus.completed;
     completedAt = DateTime.now();
   }
 
-  /// ゲーム失敗（サバイバル時）
+  /// Fail the session (e.g., survival mode game over)
   void fail() {
     status = GameModeStatus.failed;
     completedAt = DateTime.now();
   }
+
+  /// Pause the session
+  void pause() {
+    status = GameModeStatus.paused;
+  }
+
+  /// Resume the session
+  void resume() {
+    status = GameModeStatus.active;
+  }
 }
 
-/// ゲーム結果・スコア計算
+/// Represents the result of a completed game session
 class GameResult {
-  final String sessionId;
+  final String resultId;
   final GameMode gameMode;
+  final int gradeLevel;
+  final String topicType;
   final DateTime completedAt;
 
-  // スコア情報
-  final int baseScore;           // 基本スコア（正解数 × 100）
-  final int speedBonus;          // 速度ボーナス
-  final int streakBonus;         // 連続正解ボーナス
-  final int difficultyMultiplier; // 難易度倍率
-
-  // ゲーム統計
   final int correctAnswers;
   final int totalQuestions;
-  final double correctRate;
-  final double averageResponseTime;
-  final int maxStreak;
-  final int totalMisses;
-  final int elapsedSeconds;
+  final int correctRate_x100; // stored as 0-100 for consistency
 
-  // 獲得報酬
+  final int baseScore;
+  final int speedBonus;
+  final int streakBonus;
+  final int totalScore;
+
   final int coinsEarned;
   final List<String> badgesUnlocked;
-  final bool newRecord;          // 新記録達成
+
+  final int maxStreak;
+  final double averageResponseTime;
+  final int elapsedSeconds;
 
   GameResult({
-    required this.sessionId,
+    String? resultId,
     required this.gameMode,
+    required this.gradeLevel,
+    required this.topicType,
     required this.completedAt,
+    required this.correctAnswers,
+    required this.totalQuestions,
+    required this.correctRate_x100,
     required this.baseScore,
     required this.speedBonus,
     required this.streakBonus,
-    required this.difficultyMultiplier,
-    required this.correctAnswers,
-    required this.totalQuestions,
-    required this.correctRate,
-    required this.averageResponseTime,
-    required this.maxStreak,
-    required this.totalMisses,
-    required this.elapsedSeconds,
+    required this.totalScore,
     required this.coinsEarned,
     required this.badgesUnlocked,
-    required this.newRecord,
-  });
+    required this.maxStreak,
+    required this.averageResponseTime,
+    required this.elapsedSeconds,
+  }) : resultId = resultId ?? const Uuid().v4();
 
-  /// 総スコア計算
-  int get totalScore {
-    return (baseScore + speedBonus + streakBonus) * difficultyMultiplier;
-  }
+  double get correctRate => correctRate_x100 / 100.0;
 
-  /// スコア計算ロジック（static メソッド）
+  /// Calculate final result from a completed session
   static GameResult calculateResult({
-    required String sessionId,
-    required GameMode gameMode,
-    required int correctAnswers,
-    required int totalQuestions,
-    required double correctRate,
-    required double averageResponseTime,
-    required int maxStreak,
-    required int totalMisses,
+    required GameSession session,
     required int elapsedSeconds,
+    required int gradeLevel,
+    required String topicType,
   }) {
-    // 基本スコア
-    int baseScore = correctAnswers * 100;
+    // Base score: correct answers × 100
+    final baseScore = session.correctAnswers * 100;
 
-    // 速度ボーナス（平均応答時間が短いほど加点）
+    // Speed bonus
+    final avgResponseTime = session.averageResponseTime;
     int speedBonus = 0;
-    if (averageResponseTime < 1.0) {
-      speedBonus = 100;  // 1秒以下
-    } else if (averageResponseTime < 2.0) {
-      speedBonus = 50;   // 2秒以下
+    if (avgResponseTime < 1) {
+      speedBonus = 100;
+    } else if (avgResponseTime < 2) {
+      speedBonus = 50;
     }
 
-    // 連続正解ボーナス
-    int streakBonus = maxStreak > 5 ? (maxStreak - 5) * 10 : 0;
-
-    // 難易度倍率（応答時間・正答率で決定）
-    int difficultyMultiplier = 1;
-    if (correctRate >= 0.95 && averageResponseTime < 1.5) {
-      difficultyMultiplier = 2;  // 高難易度達成
-    } else if (correctRate >= 0.85 || averageResponseTime < 2.0) {
-      difficultyMultiplier = 1;  // 標準
+    // Streak bonus
+    int streakBonus = 0;
+    if (session.maxStreak > 5) {
+      streakBonus = (session.maxStreak - 5) * 10;
     }
 
-    // ゲームモード別ボーナス調整
-    if (gameMode == GameMode.marathon) {
-      speedBonus = (speedBonus * 1.5).toInt();  // マラソンは速度重視
-      streakBonus = (streakBonus * 2).toInt();  // 連続正解が重要
-    } else if (gameMode == GameMode.timeAttack) {
-      speedBonus = (speedBonus * 2).toInt();    // タイムアタックは速度最重視
+    // Difficulty multiplier (based on correct rate)
+    double difficultyMultiplier = 1.0;
+    if (session.correctRate >= 0.9) {
+      difficultyMultiplier = 2.0;
+    } else if (session.correctRate >= 0.8) {
+      difficultyMultiplier = 1.5;
+    } else if (session.correctRate >= 0.7) {
+      difficultyMultiplier = 1.2;
     }
 
-    // コイン獲得（正答率で決定）
-    int coinsEarned = 0;
-    if (correctRate >= 0.9) {
-      coinsEarned = 150;  // A+: 90%以上正解
-    } else if (correctRate >= 0.8) {
-      coinsEarned = 100;  // A: 80%以上
-    } else if (correctRate >= 0.7) {
-      coinsEarned = 50;   // B: 70%以上
-    } else if (correctRate >= 0.6) {
-      coinsEarned = 25;   // C: 60%以上
-    } else {
-      coinsEarned = 0;    // F: 60%未満
+    // Apply mode-specific bonuses
+    int modifiedSpeedBonus = speedBonus;
+    int modifiedStreakBonus = streakBonus;
+
+    if (session.gameMode == GameMode.marathon) {
+      modifiedSpeedBonus = (speedBonus * 1.5).toInt();
+      modifiedStreakBonus = (streakBonus * 2).toInt();
+    } else if (session.gameMode == GameMode.timeAttack) {
+      modifiedSpeedBonus = (speedBonus * 2).toInt();
     }
 
-    // バッジ判定（後で実装）
-    List<String> badgesUnlocked = [];
-    if (correctRate == 1.0) {
-      badgesUnlocked.add('perfect_score');
+    // Calculate total score
+    final totalScore = (
+          (baseScore + modifiedSpeedBonus + modifiedStreakBonus) *
+          difficultyMultiplier
+        ).toInt();
+
+    // Calculate coins earned
+    int coinsEarned = (session.correctAnswers * 10).toInt();
+    if (session.correctRate >= 0.9) {
+      coinsEarned = (coinsEarned * 1.5).toInt();
+    } else if (session.correctRate >= 0.8) {
+      coinsEarned = (coinsEarned * 1.2).toInt();
     }
-    if (maxStreak >= 10) {
-      badgesUnlocked.add('streak_master');
+
+    // Determine badges unlocked
+    final badgesUnlocked = <String>[];
+    if (session.correctRate >= 1.0) {
+      badgesUnlocked.add('パーフェクト');
     }
-    if (averageResponseTime < 1.0) {
-      badgesUnlocked.add('lightning_fast');
+    if (session.correctRate >= 0.9) {
+      badgesUnlocked.add('スーパースター');
+    }
+    if (session.maxStreak >= 10) {
+      badgesUnlocked.add('連続マスター');
+    }
+    if (session.gameMode == GameMode.survival && session.totalMisses == 0) {
+      badgesUnlocked.add('サバイバルチャンピオン');
     }
 
     return GameResult(
-      sessionId: sessionId,
-      gameMode: gameMode,
+      gameMode: session.gameMode,
+      gradeLevel: gradeLevel,
+      topicType: topicType,
       completedAt: DateTime.now(),
+      correctAnswers: session.correctAnswers,
+      totalQuestions: session.totalQuestions,
+      correctRate_x100: (session.correctRate * 100).toInt(),
       baseScore: baseScore,
-      speedBonus: speedBonus,
-      streakBonus: streakBonus,
-      difficultyMultiplier: difficultyMultiplier,
-      correctAnswers: correctAnswers,
-      totalQuestions: totalQuestions,
-      correctRate: correctRate,
-      averageResponseTime: averageResponseTime,
-      maxStreak: maxStreak,
-      totalMisses: totalMisses,
-      elapsedSeconds: elapsedSeconds,
+      speedBonus: modifiedSpeedBonus,
+      streakBonus: modifiedStreakBonus,
+      totalScore: totalScore,
       coinsEarned: coinsEarned,
       badgesUnlocked: badgesUnlocked,
-      newRecord: false,  // TODO: 実装
+      maxStreak: session.maxStreak,
+      averageResponseTime: session.averageResponseTime,
+      elapsedSeconds: elapsedSeconds,
     );
   }
 }
 
-/// ゲームモード統計
+/// Statistics for a specific game mode
 class GameModeStats {
   final GameMode gameMode;
   final int timesPlayed;
