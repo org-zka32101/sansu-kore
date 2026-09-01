@@ -313,6 +313,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   _ParentPraiseHint(isPerfect: r.isPerfect),
                   const SizedBox(height: 12),
                   _ShareAchievementButton(result: r, stage: widget.stage),
+                  if (_userRanking != null) ...[
+                    const SizedBox(height: 12),
+                    _ShareRankingButton(userRanking: _userRanking!),
+                  ],
                 ],
                 const SizedBox(height: 28),
                 // TODO: もう一度解くボタン（インタースティシャル広告付き）
@@ -560,6 +564,63 @@ class _ShareAchievementButton extends ConsumerWidget {
         '「${stage.title}」をクリア！\n'
         '${result.correctCount}/${result.totalCount}問正解 (${result.score}点)\n\n'
         '#算数コレ #小学算数 #算数好きな子と繋がりたい';
+    try {
+      await Share.share(text);
+    } catch (_) {}
+  }
+}
+
+/// ランキングシェアボタン
+class _ShareRankingButton extends ConsumerWidget {
+  final UserRankingData userRanking;
+
+  const _ShareRankingButton({required this.userRanking});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return OutlinedButton.icon(
+      onPressed: () => _shareRanking(context, ref),
+      icon: const Icon(Icons.emoji_events, size: 18),
+      label: const Text('ランキングをシェア！'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.blue.shade600,
+        side: BorderSide(color: Colors.blue.shade600),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ),
+    );
+  }
+
+  Future<void> _shareRanking(BuildContext context, WidgetRef ref) async {
+    final profile = ref.read(profileProvider).currentProfile;
+    final name = profile?.name ?? '小学生';
+    final grade = profile?.grade ?? 1;
+
+    // ランク別のメッセージを生成
+    String rankMessage;
+    String rankEmoji;
+    if (userRanking.rank <= 10) {
+      rankMessage = 'トップ10に入賞！スーパースター🌟';
+      rankEmoji = '👑';
+    } else if (userRanking.rank <= 100) {
+      rankMessage = 'トップ100にランクイン！';
+      rankEmoji = '🏆';
+    } else {
+      rankMessage = 'ランキング参加中';
+      rankEmoji = '⭐';
+    }
+
+    final correctRatePercent = (userRanking.correctRate * 100).toStringAsFixed(1);
+    final text = '$rankEmoji $name（小${grade}年生）のランキング成績\n\n'
+        '🏅 順位: ${userRanking.rank}位\n'
+        '💯 正答率: $correctRatePercent%\n'
+        '⚡ 平均速度: ${userRanking.averageSpeed.toStringAsFixed(1)}秒\n'
+        '🎯 スコア: ${userRanking.score}点\n\n'
+        '$rankMessage\n\n'
+        '#算数コレ #ランキング #小学算数 #頑張ってます';
+
     try {
       await Share.share(text);
     } catch (_) {}
