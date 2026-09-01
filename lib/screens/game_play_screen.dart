@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:sansu_kore/models/game_mode_model.dart';
 import 'package:sansu_kore/models/quest_model.dart';
+import 'package:sansu_kore/models/sound_model.dart';
 import 'package:sansu_kore/providers/game_mode_provider.dart';
+import 'package:sansu_kore/providers/sound_provider.dart';
 import 'package:sansu_kore/data/stage_data.dart';
 import 'package:sansu_kore/screens/challenge_result_screen.dart';
 
@@ -505,6 +507,9 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
       _hasAnswered = true;
     });
 
+    // Play sound effect based on answer correctness
+    _playAnswerSound(ref, isCorrect);
+
     _recordAnswer(question.id, index, isCorrect);
   }
 
@@ -603,6 +608,21 @@ class _GamePlayScreenState extends ConsumerState<GamePlayScreen> {
         return Colors.purple.shade500;
       case GameMode.marathon:
         return Colors.pink.shade500;
+    }
+  }
+
+  /// 回答に基づいて音声効果を再生
+  void _playAnswerSound(WidgetRef ref, bool isCorrect) {
+    final soundPlayback = ref.read(soundPlaybackProvider.notifier);
+    final shouldPlaySound = ref.read(shouldPlaySoundProvider);
+
+    if (!shouldPlaySound) return;
+
+    // Play appropriate sound
+    if (isCorrect) {
+      soundPlayback.playSound(SoundEffect.correct);
+    } else {
+      soundPlayback.playSound(SoundEffect.incorrect);
     }
   }
 }

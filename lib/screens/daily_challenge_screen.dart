@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'dart:async';
 import 'package:sansu_kore/models/daily_challenge_model.dart';
 import 'package:sansu_kore/models/quest_model.dart';
+import 'package:sansu_kore/models/sound_model.dart';
 import 'package:sansu_kore/providers/daily_challenge_provider.dart';
+import 'package:sansu_kore/providers/sound_provider.dart';
 
 /// デイリーチャレンジ画面
 /// 毎日5問のチャレンジをプレイ
@@ -423,6 +425,18 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
         _correctCount++;
       }
     });
+
+    // Play sound effect based on answer correctness
+    final soundPlayback = ref.read(soundPlaybackProvider.notifier);
+    final shouldPlaySound = ref.read(shouldPlaySoundProvider);
+
+    if (shouldPlaySound) {
+      if (isCorrect) {
+        soundPlayback.playSound(SoundEffect.correct);
+      } else {
+        soundPlayback.playSound(SoundEffect.incorrect);
+      }
+    }
   }
 
   void _nextQuestion() {
@@ -443,6 +457,24 @@ class _DailyChallengeScreenState extends ConsumerState<DailyChallengeScreen>
           correctAnswers: _correctCount,
           totalQuestions: challenge.questions.length,
         );
+
+    // Play celebration sound based on performance
+    final correctRate = _correctCount / challenge.questions.length;
+    final soundPlayback = ref.read(soundPlaybackProvider.notifier);
+    final shouldPlaySound = ref.read(shouldPlaySoundProvider);
+
+    if (shouldPlaySound) {
+      if (correctRate == 1.0) {
+        // Perfect score - play perfect sound
+        soundPlayback.playSound(SoundEffect.perfect);
+      } else if (correctRate >= 0.8) {
+        // Good score - play achievement sound
+        soundPlayback.playSound(SoundEffect.achievement);
+      } else {
+        // Completion sound
+        soundPlayback.playSound(SoundEffect.notification);
+      }
+    }
 
     // Show congratulations and return
     Navigator.pop(context);
