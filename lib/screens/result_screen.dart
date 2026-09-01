@@ -192,14 +192,32 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final rankingBadges = ref.read(rankingProvider.notifier).checkRankingBadges();
     final currentUserRanking = ref.read(rankingProvider).currentUserRanking;
 
-    // ランキングバッジは別途追跡可能（将来的に拡張）
-    if (rankingBadges['ranking_top10'] == true) {
-      print('🏆 ランキングトップ10達成！');
-    } else if (rankingBadges['ranking_top100'] == true) {
-      print('🏆 ランキングトップ100達成！');
-    }
-    if (rankingBadges['weekly_ranking_win'] == true) {
-      print('👑 週間チャンピオン達成！');
+    // ランキングマイルストーン達成時に通知
+    final profile = ref.read(profileProvider).currentProfile;
+    if (currentUserRanking != null && profile != null) {
+      if (rankingBadges['ranking_top10'] == true) {
+        print('🏆 ランキングトップ10達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: currentUserRanking.rank,
+          milestone: 'top10',
+        );
+      } else if (rankingBadges['ranking_top100'] == true) {
+        print('🏆 ランキングトップ100達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: currentUserRanking.rank,
+          milestone: 'top100',
+        );
+      }
+      if (rankingBadges['weekly_ranking_win'] == true) {
+        print('👑 週間チャンピオン達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: 1,
+          milestone: 'weekly_win',
+        );
+      }
     }
 
     if (mounted) {

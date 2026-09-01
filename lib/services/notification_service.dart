@@ -117,4 +117,35 @@ class NotificationService {
       achievement: '$topicNameでつまずいているようです。今日は「よく頑張ってるね」と声をかけてあげてください。',
     );
   }
+
+  // ランキングマイルストーン達成通知
+  static Future<void> triggerRankingMilestone({
+    required String childName,
+    required int rank,
+    required String milestone,
+  }) async {
+    String achievement;
+    switch (milestone) {
+      case 'top10':
+        achievement = '🥇 $childNameさんがランキングトップ10に入りました！おめでとう🎉';
+        break;
+      case 'top100':
+        achievement = '🏆 $childNameさんがランキングトップ100に入りました！やった👏';
+        break;
+      case 'weekly_win':
+        achievement = '👑 $childNameさんが週間ランキング第1位になりました！スーパースター！🌟';
+        break;
+      default:
+        achievement = 'ランキングが更新されました！ ${rank}位です。';
+    }
+
+    // 親へランキング達成を通知
+    await triggerParentPraise(
+      childName: childName,
+      achievement: achievement,
+    );
+
+    // 本番ではFCM経由でプッシュ通知を送信
+    // await _sendFCMNotification(childName, achievement);
+  }
 }
