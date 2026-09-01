@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:shared_core/shared_core.dart' show characterStateProvider;
 import '../models/quest_model.dart';
+import '../models/ranking_model.dart';
 import 'package:shared_core/models/badge_model.dart';
 import '../providers/progress_provider.dart';
 import '../providers/badge_provider.dart';
@@ -11,6 +12,10 @@ import '../providers/coin_provider.dart';
 import '../providers/profile_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/ghost_provider.dart';
+import '../providers/ranking_provider.dart';
+import '../providers/retention_notifications_provider.dart';
+// import '../providers/ads_provider.dart';  // TODO: Re-enable with google_mobile_ads
+// import '../providers/premium_provider.dart';  // TODO: Re-enable with ads
 import '../services/notification_service.dart';
 import '../theme/app_theme.dart';
 
@@ -27,6 +32,7 @@ class ResultScreen extends ConsumerStatefulWidget {
 class _ResultScreenState extends ConsumerState<ResultScreen> {
   late ConfettiController _confetti;
   List<BadgeModel> _newBadges = [];
+  UserRankingData? _userRanking;
   bool _saving = true;
 
   @override
@@ -68,6 +74,16 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
       correct: r.correctCount,
       total: r.totalCount,
     );
+
+    // ランキングスコアを更新
+    // 各問題のスコア計算（平均応答時間を使用）
+    final avgResponseTime = r.elapsed.inMilliseconds / r.totalCount / 1000;
+    final scoreData = QuestionScoreData.calculate(
+      questionId: '${s.grade}-${s.stageNumber}',
+      isCorrect: r.correctCount > 0,
+      responseTimeSeconds: avgResponseTime,
+    );
+    await ref.read(rankingProvider.notifier).updateScoreAfterQuestion(scoreData);
 
     final progress = ref.read(progressProvider);
 
@@ -129,9 +145,50 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         .read(characterStateProvider.notifier)
         .checkUnlocks(totalStages);
 
+    // リテンション通知：クエスト完了カウント増加
+    if (r.isPassed) {
+      await ref.read(retentionNotificationsProvider.notifier)
+          .incrementQuestsCompletedSinceReview();
+    }
+
+    // ランキングバッジのチェック
+    // 更新後に最新ランキング情報を再取得してバッジ判定
+    await ref.read(rankingProvider.notifier).fetchCurrentUserRanking();
+    final rankingBadges = ref.read(rankingProvider.notifier).checkRankingBadges();
+    final currentUserRanking = ref.read(rankingProvider).currentUserRanking;
+
+    // ランキングマイルストーン達成時に通知
+    final profile = ref.read(profileProvider).currentProfile;
+    if (currentUserRanking != null && profile != null) {
+      if (rankingBadges['ranking_top10'] == true) {
+        print('🏆 ランキングトップ10達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: currentUserRanking.rank,
+          milestone: 'top10',
+        );
+      } else if (rankingBadges['ranking_top100'] == true) {
+        print('🏆 ランキングトップ100達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: currentUserRanking.rank,
+          milestone: 'top100',
+        );
+      }
+      if (rankingBadges['weekly_ranking_win'] == true) {
+        print('👑 週間チャンピオン達成！');
+        await NotificationService.triggerRankingMilestone(
+          childName: profile.name,
+          rank: 1,
+          milestone: 'weekly_win',
+        );
+      }
+    }
+
     if (mounted) {
       setState(() {
         _newBadges = newBadges;
+        _userRanking = currentUserRanking;
         _saving = false;
       });
       if (r.isPassed) _confetti.play();
@@ -205,6 +262,11 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   stageId: widget.stage.grade * 100 + widget.stage.stageNumber,
                   currentElapsed: r.elapsed,
                 ),
+                // ランキング更新情報セクション
+                if (_userRanking != null && r.isPassed) ...[
+                  const SizedBox(height: 20),
+                  _RankingUpdateSection(userRanking: _userRanking!),
+                ],
                 if (_newBadges.isNotEmpty) ...[
                   const SizedBox(height: 20),
                   _NewBadgesSection(badges: _newBadges),
@@ -215,6 +277,10 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
                   _ParentPraiseHint(isPerfect: r.isPerfect),
                   const SizedBox(height: 12),
                   _ShareAchievementButton(result: r, stage: widget.stage),
+                  if (_userRanking != null) ...[
+                    const SizedBox(height: 12),
+                    _ShareRankingButton(userRanking: _userRanking!),
+                  ],
                 ],
                 const SizedBox(height: 28),
                 Row(
@@ -451,6 +517,63 @@ class _ShareAchievementButton extends ConsumerWidget {
   }
 }
 
+/// ランキングシェアボタン
+class _ShareRankingButton extends ConsumerWidget {
+  final UserRankingData userRanking;
+
+  const _ShareRankingButton({required this.userRanking});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return OutlinedButton.icon(
+      onPressed: () => _shareRanking(context, ref),
+      icon: const Icon(Icons.emoji_events, size: 18),
+      label: const Text('ランキングをシェア！'),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Colors.blue.shade600,
+        side: BorderSide(color: Colors.blue.shade600),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        padding:
+            const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      ),
+    );
+  }
+
+  Future<void> _shareRanking(BuildContext context, WidgetRef ref) async {
+    final profile = ref.read(profileProvider).currentProfile;
+    final name = profile?.name ?? '小学生';
+    final grade = profile?.grade ?? 1;
+
+    // ランク別のメッセージを生成
+    String rankMessage;
+    String rankEmoji;
+    if (userRanking.rank <= 10) {
+      rankMessage = 'トップ10に入賞！スーパースター🌟';
+      rankEmoji = '👑';
+    } else if (userRanking.rank <= 100) {
+      rankMessage = 'トップ100にランクイン！';
+      rankEmoji = '🏆';
+    } else {
+      rankMessage = 'ランキング参加中';
+      rankEmoji = '⭐';
+    }
+
+    final correctRatePercent = (userRanking.correctRate * 100).toStringAsFixed(1);
+    final text = '$rankEmoji $name（小${grade}年生）のランキング成績\n\n'
+        '🏅 順位: ${userRanking.rank}位\n'
+        '💯 正答率: $correctRatePercent%\n'
+        '⚡ 平均速度: ${userRanking.averageSpeed.toStringAsFixed(1)}秒\n'
+        '🎯 スコア: ${userRanking.score}点\n\n'
+        '$rankMessage\n\n'
+        '#算数コレ #ランキング #小学算数 #頑張ってます';
+
+    try {
+      await Share.share(text);
+    } catch (_) {}
+  }
+}
+
 // ─── ゴーストバトル比較セクション ───────────────────────────────────────
 class _GhostComparisonSection extends ConsumerWidget {
   final int stageId;
@@ -597,6 +720,134 @@ class _GhostComparisonSection extends ConsumerWidget {
                 ),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ランキング更新情報セクション
+class _RankingUpdateSection extends StatelessWidget {
+  final UserRankingData userRanking;
+
+  const _RankingUpdateSection({required this.userRanking});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 0),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade400, Colors.blue.shade600],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade600.withAlpha(100),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                '🏆 ランキング更新',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white.withAlpha(200),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Text(
+                  '${userRanking.rank}位',
+                  style: const TextStyle(
+                    color: Colors.blue,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 14,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              Column(
+                children: [
+                  const Text(
+                    'スコア',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${userRanking.score}',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  const Text(
+                    '正答率',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${(userRanking.correctRate * 100).toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+              Column(
+                children: [
+                  const Text(
+                    '平均速度',
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${userRanking.averageSpeed.toStringAsFixed(1)}s',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
         ],
       ),

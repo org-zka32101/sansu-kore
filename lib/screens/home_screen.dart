@@ -8,6 +8,7 @@ import '../providers/profile_provider.dart';
 import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/weekly_challenge_provider.dart';
+import '../providers/retention_notifications_provider.dart';
 import '../models/quest_model.dart';
 import '../screens/daily_bonus_screen.dart';
 import '../screens/math_guide_screen.dart';
@@ -26,6 +27,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkDailyBonus();
+      _checkRetentionNotifications();
     });
   }
 
@@ -38,6 +40,30 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         builder: (_) => const DailyBonusScreen(),
       );
     }
+  }
+
+  void _checkRetentionNotifications() {
+    final progress = ref.read(progressProvider);
+    final profile = ref.read(profileProvider).currentProfile;
+    final weeklyChallenge = ref.read(weeklyChallengeProvider);
+    final retentionNotif = ref.read(retentionNotificationsProvider.notifier);
+
+    if (profile == null) return;
+
+    // ストリーク維持リマインダー（3日以上のストリーク時）
+    if (progress.streakDays >= 3) {
+      retentionNotif.checkAndSendStreakReminder(
+        currentStreak: progress.streakDays,
+        childName: profile.name,
+      );
+    }
+
+    // ウィークリーチャレンジリマインダー
+    retentionNotif.checkAndSendChallengeReminder(
+      childName: profile.name,
+      challengesCompleted: weeklyChallenge.completed,
+      totalChallenges: weeklyChallenge.total,
+    );
   }
 
   @override
@@ -118,6 +144,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               PopupMenuButton(
                 itemBuilder: (context) => [
+                  PopupMenuItem(
+                    child: const Text('🏆 ランキング'),
+                    onTap: () => Navigator.pushNamed(context, '/ranking'),
+                  ),
                   PopupMenuItem(
                     child: const Text('📊 誤答分析'),
                     onTap: () => Navigator.pushNamed(context, '/analysis'),
