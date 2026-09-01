@@ -10,10 +10,12 @@ import '../providers/daily_login_provider.dart';
 import '../providers/adaptive_provider.dart';
 import '../providers/weekly_challenge_provider.dart';
 import '../providers/retention_notifications_provider.dart';
+import '../providers/daily_challenge_provider.dart';
 import '../models/quest_model.dart';
 import '../screens/daily_bonus_screen.dart';
 import '../screens/math_guide_screen.dart';
 import '../theme/app_theme.dart';
+import '../widgets/daily_challenge_widgets.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -29,7 +31,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _checkDailyBonus();
       _checkRetentionNotifications();
+      _initializeDailyChallenge();
     });
+  }
+
+  void _initializeDailyChallenge() {
+    final profile = ref.read(profileProvider).currentProfile;
+    if (profile != null) {
+      // Initialize daily challenge
+      ref.read(dailyChallengeProvider.notifier).loadDailyChallenge();
+
+      // Record login and update streak
+      ref.read(loginBonusProvider.notifier).initialize(profile.id);
+      ref.read(loginBonusProvider.notifier).recordLogin(profile.id);
+    }
   }
 
   void _checkDailyBonus() {
@@ -168,6 +183,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               progress: progress,
               badgeCount: badges.earnedBadges.length,
               coinCount: coins.totalCoins,
+            ),
+          ),
+
+          // ログインボーナス表示
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: LoginBonusWidget(),
+            ),
+          ),
+
+          // デイリーチャレンジカード
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: currentProfile != null
+                  ? DailyChallengeCard(userId: currentProfile.id)
+                  : const SizedBox.shrink(),
             ),
           ),
 
