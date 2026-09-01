@@ -24,8 +24,8 @@ class RankingState {
     this.currentUserRanking,
     this.isLoading = false,
     this.error,
-    DateTime? lastUpdatedAt,
-  }) : lastUpdatedAt = lastUpdatedAt ?? const Duration();
+    this.lastUpdatedAt = const DateTime.fromMicrosecondsSinceEpoch(0),
+  });
 
   RankingState copyWith({
     List<UserRankingData>? globalRanking,

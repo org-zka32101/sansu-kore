@@ -130,7 +130,6 @@ class CharacterShopNotifier extends StateNotifier<CharacterShopState> {
             description: char.backstory.split('\n').first,
             category: 'キャラクター',
             coinCost: price ?? 0,
-            isPurchased: isPurchasedChar,
           );
         })
         .toList();

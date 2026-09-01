@@ -104,7 +104,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> with SingleTickerProvid
 
   Future<void> _handleCharacterPurchase(String characterId) async {
     final coinState = ref.read(coinProvider);
-    final currentCoins = coinState.coins;
+    final currentCoins = coinState.totalCoins;
     final characterShopNotifier = ref.read(characterShopProvider.notifier);
     final price = characterShopNotifier.getCharacterPrice(characterId);
 
@@ -183,7 +183,7 @@ class _ShopScreenState extends ConsumerState<ShopScreen> with SingleTickerProvid
           _CharacterShopTab(
             characters: kSansuCharacters,
             characterShopState: characterShopState,
-            currentCoins: coinState.coins,
+            currentCoins: coinState.totalCoins,
             onPurchase: _handleCharacterPurchase,
           ),
           // アイテム購入タブ（共有コアのCoinShopPageを使用）
