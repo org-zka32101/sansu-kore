@@ -4,6 +4,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:sansu_kore/models/math_guide_model.dart';
+import 'package:sansu_kore/providers/guide_progress_provider.dart';
 
 /// ガイドカード（ホーム画面表示用）
 class MathGuideCard extends StatelessWidget {
@@ -103,7 +104,7 @@ class MathGuideCard extends StatelessWidget {
 }
 
 /// ガイド詳細表示ウィジェット
-class MathGuideDetail extends StatefulWidget {
+class MathGuideDetail extends ConsumerStatefulWidget {
   final MathGuide guide;
 
   const MathGuideDetail({
@@ -112,10 +113,10 @@ class MathGuideDetail extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  State<MathGuideDetail> createState() => _MathGuideDetailState();
+  ConsumerState<MathGuideDetail> createState() => _MathGuideDetailState();
 }
 
-class _MathGuideDetailState extends State<MathGuideDetail> {
+class _MathGuideDetailState extends ConsumerState<MathGuideDetail> {
   late PageController _pageController;
   int _currentStep = 0;
 
@@ -123,6 +124,10 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
   void initState() {
     super.initState();
     _pageController = PageController();
+    // Start tracking this guide
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(guideProgressProvider.notifier).startGuide(widget.guide);
+    });
   }
 
   @override
@@ -201,6 +206,12 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
               setState(() {
                 _currentStep = index;
               });
+              // Track step progress
+              ref.read(guideProgressProvider.notifier).updateGuideStep(
+                    widget.guide.id,
+                    index,
+                    false,
+                  );
             },
             children: widget.guide.steps.map((step) {
               return _buildStepContent(step);
@@ -282,6 +293,7 @@ class _MathGuideDetailState extends State<MathGuideDetail> {
                           );
                         } else {
                           // 完了
+                          ref.read(guideProgressProvider.notifier).completeGuide(widget.guide.id);
                           Navigator.pop(context);
                         }
                       },
