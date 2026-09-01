@@ -1,0 +1,425 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/ranking_model.dart';
+import '../providers/ranking_provider.dart';
+
+class RankingScreen extends ConsumerStatefulWidget {
+  const RankingScreen({Key? key}) : super(key: key);
+
+  @override
+  ConsumerState<RankingScreen> createState() => _RankingScreenState();
+}
+
+class _RankingScreenState extends ConsumerState<RankingScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 4, vsync: this);
+
+    // 初期化時に全ランキングを取得
+    Future.microtask(() async {
+      final ranking = ref.read(rankingProvider.notifier);
+      await ranking.fetchGlobalRanking();
+      await ranking.fetchWeeklyRanking();
+      await ranking.fetchMonthlyRanking();
+      await ranking.fetchCurrentUserRanking();
+    });
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rankingState = ref.watch(rankingProvider);
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('ランキング'),
+        elevation: 0,
+        backgroundColor: Colors.blue.shade700,
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: '全体'),
+            Tab(text: '週間'),
+            Tab(text: '月間'),
+            Tab(text: 'フレンド'),
+          ],
+        ),
+      ),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // グローバルランキング
+          _RankingListView(
+            ranking: rankingState.globalRanking,
+            currentUserRanking: rankingState.currentUserRanking,
+            isLoading: rankingState.isLoading,
+            error: rankingState.error,
+            onRefresh: () async {
+              await ref.read(rankingProvider.notifier).fetchGlobalRanking();
+            },
+          ),
+          // 週間ランキング
+          _RankingListView(
+            ranking: rankingState.weeklyRanking,
+            currentUserRanking: rankingState.currentUserRanking,
+            isLoading: rankingState.isLoading,
+            error: rankingState.error,
+            onRefresh: () async {
+              await ref.read(rankingProvider.notifier).fetchWeeklyRanking();
+            },
+          ),
+          // 月間ランキング
+          _RankingListView(
+            ranking: rankingState.monthlyRanking,
+            currentUserRanking: rankingState.currentUserRanking,
+            isLoading: rankingState.isLoading,
+            error: rankingState.error,
+            onRefresh: () async {
+              await ref.read(rankingProvider.notifier).fetchMonthlyRanking();
+            },
+          ),
+          // フレンドランキング
+          _RankingListView(
+            ranking: rankingState.friendsRanking,
+            currentUserRanking: rankingState.currentUserRanking,
+            isLoading: rankingState.isLoading,
+            error: rankingState.error,
+            onRefresh: () async {
+              await ref.read(rankingProvider.notifier).fetchFriendsRanking();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ランキングリスト表示ウィジェット
+class _RankingListView extends StatelessWidget {
+  final List<UserRankingData> ranking;
+  final UserRankingData? currentUserRanking;
+  final bool isLoading;
+  final String? error;
+  final Future<void> Function() onRefresh;
+
+  const _RankingListView({
+    required this.ranking,
+    required this.currentUserRanking,
+    required this.isLoading,
+    required this.error,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (isLoading && ranking.isEmpty) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+
+    if (error != null && ranking.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.error_outline, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            Text('エラーが発生しました\n$error'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRefresh,
+              child: const Text('再度読み込む'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (ranking.isEmpty) {
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.leaderboard, size: 64, color: Colors.grey.shade400),
+            const SizedBox(height: 16),
+            const Text('ランキングデータがありません'),
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: onRefresh,
+              child: const Text('読み込む'),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return RefreshIndicator(
+      onRefresh: onRefresh,
+      child: Column(
+        children: [
+          // 現在のユーザーのランク表示
+          if (currentUserRanking != null)
+            _CurrentUserCard(userRanking: currentUserRanking!),
+
+          // ランキングリスト
+          Expanded(
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 8),
+              itemCount: ranking.length,
+              itemBuilder: (context, index) {
+                final user = ranking[index];
+                return _RankingTile(userRanking: user, index: index);
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 現在のユーザーのランク表示カード
+class _CurrentUserCard extends StatelessWidget {
+  final UserRankingData userRanking;
+
+  const _CurrentUserCard({required this.userRanking});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Colors.blue.shade400, Colors.blue.shade700],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.blue.shade700.withOpacity(0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            children: [
+              // ランク表示
+              Container(
+                width: 56,
+                height: 56,
+                decoration: BoxDecoration(
+                  color: Colors.white.withOpacity(0.3),
+                  shape: BoxShape.circle,
+                ),
+                child: Center(
+                  child: Text(
+                    '${userRanking.rank}位',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              // ユーザー情報
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userRanking.userName,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '正答率: ${(userRanking.correctRate * 100).toStringAsFixed(1)}%',
+                    style: const TextStyle(
+                      color: Colors.white70,
+                      fontSize: 12,
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // スコア表示
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                '${userRanking.score}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 24,
+                ),
+              ),
+              const SizedBox(height: 4),
+              const Text(
+                'ポイント',
+                style: TextStyle(
+                  color: Colors.white70,
+                  fontSize: 11,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// ランキング一行のタイル
+class _RankingTile extends StatelessWidget {
+  final UserRankingData userRanking;
+  final int index;
+
+  const _RankingTile({
+    required this.userRanking,
+    required this.index,
+  });
+
+  /// ランクに応じたアイコン/色を返す
+  ({Color color, String medal}) _getRankIcon() {
+    return switch (index) {
+      0 => (color: Colors.amber, medal: '🥇'),
+      1 => (color: Colors.grey, medal: '🥈'),
+      2 => (color: Colors.orange, medal: '🥉'),
+      _ => (color: Colors.grey.shade400, medal: ''),
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final rankIcon = _getRankIcon();
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 0),
+      elevation: index < 3 ? 2 : 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+        side: index < 3
+            ? BorderSide(color: rankIcon.color, width: 2)
+            : BorderSide.none,
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          children: [
+            // ランク番号
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: rankIcon.color.withOpacity(0.2),
+                shape: BoxShape.circle,
+              ),
+              child: Center(
+                child: index < 3
+                    ? Text(
+                        rankIcon.medal,
+                        style: const TextStyle(fontSize: 20),
+                      )
+                    : Text(
+                        '${index + 1}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: rankIcon.color,
+                        ),
+                      ),
+              ),
+            ),
+            const SizedBox(width: 12),
+            // ユーザー情報
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    userRanking.userName,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '正答率: ${(userRanking.correctRate * 100).toStringAsFixed(1)}%',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Colors.grey.shade600,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '⏱ ${userRanking.averageSpeed.toStringAsFixed(1)}s',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey.shade600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // スコア
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  '${userRanking.score}',
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 18,
+                    color: Colors.blue,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'pts',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

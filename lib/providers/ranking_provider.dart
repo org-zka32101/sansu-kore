@@ -1,0 +1,398 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../models/ranking_model.dart';
+import 'profile_provider.dart';
+
+/// ランキングデータの状態管理
+class RankingState {
+  final List<UserRankingData> globalRanking;
+  final List<UserRankingData> weeklyRanking;
+  final List<UserRankingData> monthlyRanking;
+  final List<UserRankingData> friendsRanking;
+  final UserRankingData? currentUserRanking;
+  final bool isLoading;
+  final String? error;
+  final DateTime lastUpdatedAt;
+
+  const RankingState({
+    this.globalRanking = const [],
+    this.weeklyRanking = const [],
+    this.monthlyRanking = const [],
+    this.friendsRanking = const [],
+    this.currentUserRanking,
+    this.isLoading = false,
+    this.error,
+    DateTime? lastUpdatedAt,
+  }) : lastUpdatedAt = lastUpdatedAt ?? const Duration();
+
+  RankingState copyWith({
+    List<UserRankingData>? globalRanking,
+    List<UserRankingData>? weeklyRanking,
+    List<UserRankingData>? monthlyRanking,
+    List<UserRankingData>? friendsRanking,
+    UserRankingData? currentUserRanking,
+    bool? isLoading,
+    String? error,
+    DateTime? lastUpdatedAt,
+  }) {
+    return RankingState(
+      globalRanking: globalRanking ?? this.globalRanking,
+      weeklyRanking: weeklyRanking ?? this.weeklyRanking,
+      monthlyRanking: monthlyRanking ?? this.monthlyRanking,
+      friendsRanking: friendsRanking ?? this.friendsRanking,
+      currentUserRanking: currentUserRanking ?? this.currentUserRanking,
+      isLoading: isLoading ?? this.isLoading,
+      error: error,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+    );
+  }
+}
+
+/// ランキング管理ロジック
+class RankingNotifier extends StateNotifier<RankingState> {
+  final FirebaseFirestore _firestore;
+  final FirebaseAuth _auth;
+  final Ref _ref;
+
+  RankingNotifier(this._firestore, this._auth, this._ref)
+      : super(const RankingState());
+
+  /// グローバルランキングを取得（全ユーザーの上位100位まで）
+  Future<void> fetchGlobalRanking() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final snapshot = await _firestore
+          .collection('rankings')
+          .doc('global')
+          .collection('users')
+          .orderBy('score', descending: true)
+          .limit(100)
+          .get();
+
+      final ranking = snapshot.docs
+          .asMap()
+          .entries
+          .map((entry) {
+            final doc = entry.value;
+            final data = UserRankingData.fromFirestore(doc);
+            return data.copyWith(rank: entry.key + 1);
+          })
+          .toList();
+
+      state = state.copyWith(
+        globalRanking: ranking,
+        lastUpdatedAt: DateTime.now(),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: 'グローバルランキングの取得に失敗しました: $e',
+        isLoading: false,
+      );
+    }
+  }
+
+  /// 週間ランキングを取得
+  Future<void> fetchWeeklyRanking() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final snapshot = await _firestore
+          .collection('rankings')
+          .doc('weekly')
+          .collection('users')
+          .orderBy('weeklyScore', descending: true)
+          .limit(100)
+          .get();
+
+      final ranking = snapshot.docs
+          .asMap()
+          .entries
+          .map((entry) {
+            final doc = entry.value;
+            final data = UserRankingData.fromFirestore(doc);
+            return data.copyWith(rank: entry.key + 1);
+          })
+          .toList();
+
+      state = state.copyWith(
+        weeklyRanking: ranking,
+        lastUpdatedAt: DateTime.now(),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: '週間ランキングの取得に失敗しました: $e',
+        isLoading: false,
+      );
+    }
+  }
+
+  /// 月間ランキングを取得
+  Future<void> fetchMonthlyRanking() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final snapshot = await _firestore
+          .collection('rankings')
+          .doc('monthly')
+          .collection('users')
+          .orderBy('monthlyScore', descending: true)
+          .limit(100)
+          .get();
+
+      final ranking = snapshot.docs
+          .asMap()
+          .entries
+          .map((entry) {
+            final doc = entry.value;
+            final data = UserRankingData.fromFirestore(doc);
+            return data.copyWith(rank: entry.key + 1);
+          })
+          .toList();
+
+      state = state.copyWith(
+        monthlyRanking: ranking,
+        lastUpdatedAt: DateTime.now(),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: '月間ランキングの取得に失敗しました: $e',
+        isLoading: false,
+      );
+    }
+  }
+
+  /// フレンドランキングを取得
+  /// TODO: フレンド機能が実装されたら実装
+  Future<void> fetchFriendsRanking() async {
+    try {
+      state = state.copyWith(isLoading: true, error: null);
+
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) {
+        state = state.copyWith(
+          error: 'ユーザーがログインしていません',
+          isLoading: false,
+        );
+        return;
+      }
+
+      // フレンドリストを取得（デフォルトは空）
+      // TODO: friendsProvider と連携
+      const friendIds = <String>[];
+
+      if (friendIds.isEmpty) {
+        state = state.copyWith(
+          friendsRanking: const [],
+          isLoading: false,
+        );
+        return;
+      }
+
+      final snapshot = await _firestore
+          .collection('rankings')
+          .doc('global')
+          .collection('users')
+          .where('userId', whereIn: friendIds)
+          .orderBy('score', descending: true)
+          .get();
+
+      final ranking = snapshot.docs
+          .asMap()
+          .entries
+          .map((entry) {
+            final doc = entry.value;
+            final data = UserRankingData.fromFirestore(doc);
+            return data.copyWith(rank: entry.key + 1);
+          })
+          .toList();
+
+      state = state.copyWith(
+        friendsRanking: ranking,
+        lastUpdatedAt: DateTime.now(),
+        isLoading: false,
+      );
+    } catch (e) {
+      state = state.copyWith(
+        error: 'フレンドランキングの取得に失敗しました: $e',
+        isLoading: false,
+      );
+    }
+  }
+
+  /// 現在のユーザーのランキング情報を取得
+  Future<void> fetchCurrentUserRanking() async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) return;
+
+      // グローバルランキングから現在のユーザーを検索
+      final globalDoc = await _firestore
+          .collection('rankings')
+          .doc('global')
+          .collection('users')
+          .doc(currentUser.uid)
+          .get();
+
+      if (globalDoc.exists) {
+        final data = UserRankingData.fromFirestore(globalDoc);
+        state = state.copyWith(currentUserRanking: data);
+      }
+    } catch (e) {
+      // ユーザーがまだランキングにない可能性がある
+      print('Error fetching current user ranking: $e');
+    }
+  }
+
+  /// 問題回答後にスコアを更新
+  Future<void> updateScoreAfterQuestion(QuestionScoreData scoreData) async {
+    try {
+      final currentUser = _auth.currentUser;
+      if (currentUser == null) return;
+
+      final profile = _ref.read(profileProvider);
+      if (profile == null) return;
+
+      // グローバルランキングを更新
+      await _updateUserScore(
+        category: 'global',
+        userId: currentUser.uid,
+        scorePoints: scoreData.totalScore,
+      );
+
+      // 週間・月間ランキングも更新
+      await _updateUserScore(
+        category: 'weekly',
+        userId: currentUser.uid,
+        scorePoints: scoreData.totalScore,
+      );
+
+      await _updateUserScore(
+        category: 'monthly',
+        userId: currentUser.uid,
+        scorePoints: scoreData.totalScore,
+      );
+
+      // 現在のユーザー情報を再取得
+      await fetchCurrentUserRanking();
+    } catch (e) {
+      print('Error updating score: $e');
+    }
+  }
+
+  /// Firestore のスコア更新処理（内部関数）
+  Future<void> _updateUserScore({
+    required String category,
+    required String userId,
+    required int scorePoints,
+  }) async {
+    final batch = _firestore.batch();
+
+    final userDocRef = _firestore
+        .collection('rankings')
+        .doc(category)
+        .collection('users')
+        .doc(userId);
+
+    batch.update(
+      userDocRef,
+      {
+        'score': FieldValue.increment(scorePoints),
+        if (category == 'weekly') 'weeklyScore': FieldValue.increment(scorePoints),
+        if (category == 'monthly')
+          'monthlyScore': FieldValue.increment(scorePoints),
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      },
+    );
+
+    await batch.commit();
+  }
+
+  /// 初回ランキングデータを初期化（新規ユーザー用）
+  Future<void> initializeUserRanking({
+    required String userId,
+    required String userName,
+    String? avatarUrl,
+  }) async {
+    try {
+      final now = DateTime.now();
+      const data = {
+        'userName': 'ユーザー',
+        'avatarUrl': '',
+        'score': 0,
+        'rank': 0,
+        'totalQuestionsAnswered': 0,
+        'correctRate': 0.0,
+        'averageSpeed': 0.0,
+        'weeklyScore': 0,
+        'monthlyScore': 0,
+        'lastUpdatedAt': FieldValue.serverTimestamp(),
+      };
+
+      final batch = _firestore.batch();
+
+      // グローバル
+      batch.set(
+        _firestore
+            .collection('rankings')
+            .doc('global')
+            .collection('users')
+            .doc(userId),
+        data,
+        SetOptions(merge: true),
+      );
+
+      // 週間
+      batch.set(
+        _firestore
+            .collection('rankings')
+            .doc('weekly')
+            .collection('users')
+            .doc(userId),
+        data,
+        SetOptions(merge: true),
+      );
+
+      // 月間
+      batch.set(
+        _firestore
+            .collection('rankings')
+            .doc('monthly')
+            .collection('users')
+            .doc(userId),
+        data,
+        SetOptions(merge: true),
+      );
+
+      await batch.commit();
+    } catch (e) {
+      print('Error initializing user ranking: $e');
+    }
+  }
+
+  /// 全ランキングをリアルタイムで監視
+  Stream<RankingState> streamAllRankings() {
+    return Stream.fromFutures([
+      Future(() async {
+        await fetchGlobalRanking();
+        await fetchWeeklyRanking();
+        await fetchMonthlyRanking();
+        await fetchCurrentUserRanking();
+        return state;
+      }),
+    ]);
+  }
+}
+
+/// ランキング Provider（Riverpod）
+final rankingProvider = StateNotifierProvider<RankingNotifier, RankingState>(
+  (ref) {
+    final firestore = FirebaseFirestore.instance;
+    final auth = FirebaseAuth.instance;
+    return RankingNotifier(firestore, auth, ref);
+  },
+);
