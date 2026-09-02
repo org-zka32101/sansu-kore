@@ -16,6 +16,8 @@ class UserRankingData {
   final int weeklyScore; // 週間スコア
   final int monthlyScore; // 月間スコア
   final bool isNamePublic; // ランキングに名前を公開するか (デフォルト: false)
+  final int gradeLevel; // 学年 (1-6)
+  final DateTime startDate; // ユーザー登録日 (開始月別グループ化用)
 
   const UserRankingData({
     required this.userId,
@@ -30,7 +32,9 @@ class UserRankingData {
     this.weeklyScore = 0,
     this.monthlyScore = 0,
     this.isNamePublic = false,
-  });
+    this.gradeLevel = 1,
+    DateTime? startDate,
+  }) : startDate = startDate ?? DateTime.now();
 
   /// Firestore ドキュメントから UserRankingData を生成
   factory UserRankingData.fromFirestore(
@@ -52,6 +56,10 @@ class UserRankingData {
       weeklyScore: data['weeklyScore'] as int? ?? 0,
       monthlyScore: data['monthlyScore'] as int? ?? 0,
       isNamePublic: data['isNamePublic'] as bool? ?? false,
+      gradeLevel: data['gradeLevel'] as int? ?? 1,
+      startDate: data['startDate'] != null
+          ? (data['startDate'] as Timestamp).toDate()
+          : DateTime.now(),
     );
   }
 
@@ -69,6 +77,8 @@ class UserRankingData {
       'weeklyScore': weeklyScore,
       'monthlyScore': monthlyScore,
       'isNamePublic': isNamePublic,
+      'gradeLevel': gradeLevel,
+      'startDate': Timestamp.fromDate(startDate),
     };
   }
 
@@ -86,6 +96,8 @@ class UserRankingData {
     int? weeklyScore,
     int? monthlyScore,
     bool? isNamePublic,
+    int? gradeLevel,
+    DateTime? startDate,
   }) {
     return UserRankingData(
       userId: userId ?? this.userId,
@@ -101,6 +113,8 @@ class UserRankingData {
       weeklyScore: weeklyScore ?? this.weeklyScore,
       monthlyScore: monthlyScore ?? this.monthlyScore,
       isNamePublic: isNamePublic ?? this.isNamePublic,
+      gradeLevel: gradeLevel ?? this.gradeLevel,
+      startDate: startDate ?? this.startDate,
     );
   }
 
