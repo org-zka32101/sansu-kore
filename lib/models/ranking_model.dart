@@ -33,8 +33,8 @@ class UserRankingData {
     this.monthlyScore = 0,
     this.isNamePublic = false,
     this.gradeLevel = 1,
-    DateTime? startDate,
-  }) : startDate = startDate ?? DateTime.now();
+    required this.startDate,
+  });
 
   /// Firestore ドキュメントから UserRankingData を生成
   factory UserRankingData.fromFirestore(

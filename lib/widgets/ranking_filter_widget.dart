@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/ranking_filter_model.dart';
 import '../providers/ranking_provider.dart';
+import '../providers/grade_upgrade_provider.dart';
 
 /// コンパクトなランキングフィルタ表示ウィジェット
 class CompactRankingFilter extends ConsumerWidget {
