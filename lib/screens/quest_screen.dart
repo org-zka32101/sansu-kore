@@ -405,8 +405,10 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                           Expanded(
                             child: FuriganaText(
                               _current.hint!,
-                              fontSize: 14,
-                              color: kTextDark,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: kTextDark,
+                              ),
                             ),
                           ),
                         ],
@@ -654,8 +656,10 @@ class _QuestScreenState extends ConsumerState<QuestScreen>
                             const SizedBox(height: 8),
                             FuriganaText(
                               _current.explanation,
-                              fontSize: 14,
-                              color: kTextDark,
+                              style: const TextStyle(
+                                fontSize: 14,
+                                color: kTextDark,
+                              ),
                             ),
                           ],
                         ),

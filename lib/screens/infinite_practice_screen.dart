@@ -310,8 +310,10 @@ class _InfinitePracticeScreenState
                                   const SizedBox(height: 4),
                                   FuriganaText(
                                     _current.explanation,
-                                    fontSize: 14,
-                                    color: kTextDark,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: kTextDark,
+                                    ),
                                   ),
                                 ],
                               ),

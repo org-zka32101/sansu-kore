@@ -1,6 +1,7 @@
 // Guide Progress Provider - Track math guide viewing history and completion
 // Features: Progress persistence, completion tracking, guide recommendations
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:sansu_kore/models/math_guide_model.dart';
@@ -74,14 +75,14 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
               isCompleted: isCompleted,
             );
           } catch (e) {
-            print('Error loading guide progress for $key: $e');
+            if (kDebugMode) print('Error loading guide progress for $key: $e');
           }
         }
       }
 
       state = state.copyWith(progressMap: progressMap);
     } catch (e) {
-      print('Error initializing guide progress: $e');
+      if (kDebugMode) print('Error initializing guide progress: $e');
     }
   }
 
@@ -105,7 +106,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
 
       await _saveProgress(guide.id, progress);
     } catch (e) {
-      print('Error starting guide: $e');
+      if (kDebugMode) print('Error starting guide: $e');
     }
   }
 
@@ -133,7 +134,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
 
       await _saveProgress(guideId, updatedProgress);
     } catch (e) {
-      print('Error updating guide step: $e');
+      if (kDebugMode) print('Error updating guide step: $e');
     }
   }
 
@@ -156,7 +157,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
 
       await _saveProgress(guideId, completedProgress);
     } catch (e) {
-      print('Error completing guide: $e');
+      if (kDebugMode) print('Error completing guide: $e');
     }
   }
 
@@ -185,7 +186,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
       await prefs.setBool('guide_progress_${guideId}_isCompleted',
           progress.isCompleted);
     } catch (e) {
-      print('Error saving guide progress: $e');
+      if (kDebugMode) print('Error saving guide progress: $e');
     }
   }
 
@@ -205,7 +206,7 @@ class GuideProgressNotifier extends StateNotifier<GuideProgressState> {
       }
       await prefs.remove('guide_progress_keys');
     } catch (e) {
-      print('Error resetting guide progress: $e');
+      if (kDebugMode) print('Error resetting guide progress: $e');
     }
   }
 }

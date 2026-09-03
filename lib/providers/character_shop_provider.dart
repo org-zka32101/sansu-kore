@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:shared_core/shared_core.dart';
@@ -109,7 +110,7 @@ class CharacterShopNotifier extends StateNotifier<CharacterShopState> {
 
       return true;
     } catch (e) {
-      print('Error purchasing character: $e');
+      if (kDebugMode) print('Error purchasing character: $e');
       return false;
     }
   }
@@ -129,7 +130,6 @@ class CharacterShopNotifier extends StateNotifier<CharacterShopState> {
             description: char.backstory.split('\n').first,
             category: 'キャラクター',
             coinCost: price ?? 0,
-            isPurchased: isPurchasedChar,
           );
         })
         .toList();

@@ -257,9 +257,10 @@ class _MathGuideDetailState extends ConsumerState<MathGuideDetail> {
                     false,
                   );
             },
-            children: widget.guide.steps.map((step) {
-              return _buildStepContent(step);
-            }).toList(),
+            itemCount: widget.guide.steps.length,
+            itemBuilder: (context, index) {
+              return _buildStepContent(widget.guide.steps[index]);
+            },
           ),
         ),
 
@@ -618,17 +619,18 @@ class _MathGuideCarouselState extends ConsumerState<MathGuideCarousel> {
                 _currentIndex = index;
               });
             },
-            children: widget.guides.map((guide) {
+            itemCount: widget.guides.length,
+            itemBuilder: (context, index) {
               return Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
                 child: MathGuideCard(
-                  guide: guide,
+                  guide: widget.guides[index],
                   onTap: () {
-                    widget.onGuideSelected(guide);
+                    widget.onGuideSelected(widget.guides[index]);
                   },
                 ),
               );
-            }).toList(),
+            },
           ),
         ),
 

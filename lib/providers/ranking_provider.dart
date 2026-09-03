@@ -1,7 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/ranking_model.dart';
+import '../models/ranking_filter_model.dart';
 import 'profile_provider.dart';
 
 /// ランキングデータの状態管理
@@ -15,7 +17,7 @@ class RankingState {
   final String? error;
   final DateTime lastUpdatedAt;
 
-  const RankingState({
+  RankingState({
     this.globalRanking = const [],
     this.weeklyRanking = const [],
     this.monthlyRanking = const [],
@@ -24,7 +26,7 @@ class RankingState {
     this.isLoading = false,
     this.error,
     DateTime? lastUpdatedAt,
-  }) : lastUpdatedAt = lastUpdatedAt ?? const Duration();
+  }) : lastUpdatedAt = lastUpdatedAt ?? DateTime.utc(1970, 1, 1);
 
   RankingState copyWith({
     List<UserRankingData>? globalRanking,
@@ -56,7 +58,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
   final Ref _ref;
 
   RankingNotifier(this._firestore, this._auth, this._ref)
-      : super(const RankingState());
+      : super(RankingState());
 
   /// グローバルランキングを取得（全ユーザーの上位100位まで）
   Future<void> fetchGlobalRanking() async {
@@ -244,7 +246,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
       }
     } catch (e) {
       // ユーザーがまだランキングにない可能性がある
-      print('Error fetching current user ranking: $e');
+      if (kDebugMode) print('Error fetching current user ranking: $e');
     }
   }
 
@@ -280,7 +282,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
       // 現在のユーザー情報を再取得
       await fetchCurrentUserRanking();
     } catch (e) {
-      print('Error updating score: $e');
+      if (kDebugMode) print('Error updating score: $e');
     }
   }
 
@@ -336,10 +338,11 @@ class RankingNotifier extends StateNotifier<RankingState> {
     required String userId,
     required String userName,
     String? avatarUrl,
+    int gradeLevel = 1,
   }) async {
     try {
       final now = DateTime.now();
-      const data = {
+      final data = {
         'userName': 'ユーザー',
         'avatarUrl': '',
         'score': 0,
@@ -350,6 +353,8 @@ class RankingNotifier extends StateNotifier<RankingState> {
         'weeklyScore': 0,
         'monthlyScore': 0,
         'isNamePublic': false, // デフォルトはプライベート
+        'gradeLevel': gradeLevel,
+        'startDate': FieldValue.serverTimestamp(),
         'lastUpdatedAt': FieldValue.serverTimestamp(),
       };
 
@@ -390,7 +395,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
 
       await batch.commit();
     } catch (e) {
-      print('Error initializing user ranking: $e');
+      if (kDebugMode) print('Error initializing user ranking: $e');
     }
   }
 
@@ -432,7 +437,7 @@ class RankingNotifier extends StateNotifier<RankingState> {
         );
       }
     } catch (e) {
-      print('Error updating name public setting: $e');
+      if (kDebugMode) print('Error updating name public setting: $e');
     }
   }
 
@@ -448,6 +453,22 @@ class RankingNotifier extends StateNotifier<RankingState> {
       }),
     ]);
   }
+
+  /// フィルタ条件に基づいてランキングをフィルタリング
+  List<UserRankingData> getFilteredRanking(RankingFilter filter) {
+    final rankings = state.globalRanking;
+    return RankingFilterService.filterRankings(rankings, filter);
+  }
+
+  /// 利用可能な学年リストを取得
+  List<int> getAvailableGrades() {
+    return RankingFilterService.getAvailableGrades(state.globalRanking);
+  }
+
+  /// 利用可能な開始月リストを取得
+  List<DateTime> getAvailableStartMonths() {
+    return RankingFilterService.getAvailableStartMonths(state.globalRanking);
+  }
 }
 
 /// ランキング Provider（Riverpod）
@@ -458,3 +479,73 @@ final rankingProvider = StateNotifierProvider<RankingNotifier, RankingState>(
     return RankingNotifier(firestore, auth, ref);
   },
 );
+
+/// ランキングフィルタの状態管理
+class RankingFilterNotifier extends StateNotifier<RankingFilter> {
+  RankingFilterNotifier()
+      : super(const RankingFilter(groupOption: RankingGroupOption.global));
+
+  /// フィルタを更新
+  void updateFilter(RankingFilter filter) {
+    state = filter;
+  }
+
+  /// グループ化オプションを変更
+  void setGroupOption(RankingGroupOption option) {
+    state = RankingFilter(
+      groupOption: option,
+      selectedGrade: option == RankingGroupOption.grade ||
+              option == RankingGroupOption.combined
+          ? state.selectedGrade
+          : null,
+      selectedMonth: option == RankingGroupOption.startMonth ||
+              option == RankingGroupOption.combined
+          ? state.selectedMonth
+          : null,
+    );
+  }
+
+  /// 学年を選択
+  void selectGrade(int grade) {
+    state = state.copyWith(selectedGrade: grade);
+  }
+
+  /// 開始月を選択
+  void selectStartMonth(DateTime month) {
+    state = state.copyWith(selectedMonth: month);
+  }
+
+  /// フィルタをリセット
+  void resetFilter() {
+    state = const RankingFilter(groupOption: RankingGroupOption.global);
+  }
+}
+
+/// ランキングフィルタ Provider
+final rankingFilterProvider =
+    StateNotifierProvider<RankingFilterNotifier, RankingFilter>(
+  (ref) => RankingFilterNotifier(),
+);
+
+/// フィルタされたランキングを取得するプロバイダ
+final filteredRankingProvider =
+    Provider<List<UserRankingData>>((ref) {
+  final ranking = ref.watch(rankingProvider);
+  final filter = ref.watch(rankingFilterProvider);
+  final notifier = ref.read(rankingProvider.notifier);
+  return notifier.getFilteredRanking(filter);
+});
+
+/// 利用可能な学年リストを取得するプロバイダ
+final availableGradesProvider = Provider<List<int>>((ref) {
+  final ranking = ref.watch(rankingProvider);
+  final notifier = ref.read(rankingProvider.notifier);
+  return notifier.getAvailableGrades();
+});
+
+/// 利用可能な開始月リストを取得するプロバイダ
+final availableStartMonthsProvider = Provider<List<DateTime>>((ref) {
+  final ranking = ref.watch(rankingProvider);
+  final notifier = ref.read(rankingProvider.notifier);
+  return notifier.getAvailableStartMonths();
+});

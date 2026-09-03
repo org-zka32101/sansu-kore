@@ -10,7 +10,7 @@ import 'models/quest_model.dart';
 import 'providers/character_provider.dart';
 import 'screens/character_screen.dart';
 import 'screens/badge_collection_screen.dart';
-import 'screens/ranking_screen.dart';
+import 'screens/ranking_filter_screen.dart';
 import 'screens/shop_screen.dart';
 import 'screens/daily_bonus_screen.dart';
 import 'screens/weekly_challenge_screen.dart';
@@ -30,6 +30,7 @@ import 'screens/stage_select_screen.dart';
 import 'screens/infinite_practice_screen.dart';
 import 'screens/upgrade_screen.dart';
 import 'screens/analysis_dashboard_screen.dart';
+import 'screens/grade_upgrade_screen.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -67,59 +68,61 @@ class SansuKoreApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return MaterialApp(
-      title: '算数コレ！',
-      theme: buildSansuTheme(),
-      debugShowCheckedModeBanner: false,
-      initialRoute: '/',
-      routes: {
-        '/': (context) => const OrgSplashScreen(),
-        '/app-splash': (context) => const SplashScreen(),
-        '/onboarding': (context) => const OnboardingScreen(),
-        '/profile-selection': (context) => const ProfileSelectionScreen(),
-        '/home': (context) => const RootShell(),
-        '/stages': (context) => const StageSelectScreen(),
-        '/characters': (context) => const CharacterScreen(),
-        '/badge-collection': (context) => const BadgeCollectionScreen(),
-        '/ranking': (context) => const RankingScreen(),
-        '/settings': (context) => const SettingsScreen(),
-        '/upgrade': (context) => const UpgradeScreen(),
-        '/privacy': (context) => const PrivacyPolicyScreen(),
-        '/terms': (context) => const PrivacyPolicyScreen(),
-        '/daily-bonus': (context) => const DailyBonusScreen(),
-        '/weekly-challenge': (context) => const WeeklyChallengeScreen(),
-        '/growth': (context) => const GrowthScreen(),
-        '/invite': (context) => const InviteScreen(),
-        '/math-guide': (context) => const MathGuideScreen(),
-        '/analysis': (context) => const AnalysisDashboardScreen(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/quest') {
-          final stage = settings.arguments as Stage;
-          return MaterialPageRoute(
-            builder: (_) => QuestScreen(stage: stage),
-            settings: settings,
-          );
-        }
-        if (settings.name == '/result') {
-          final args = settings.arguments as Map<String, dynamic>;
-          return MaterialPageRoute(
-            builder: (_) => ResultScreen(
-              result: args['result'] as QuestResult,
-              stage: args['stage'] as Stage,
-            ),
-            settings: settings,
-          );
-        }
-        if (settings.name == '/infinite-practice') {
-          final topic = settings.arguments as MathTopicType?;
-          return MaterialPageRoute(
-            builder: (_) => InfinitePracticeScreen(initialTopic: topic),
-            settings: settings,
-          );
-        }
-        return null;
-      },
+    return GradeUpgradeChecker(
+      child: MaterialApp(
+        title: '算数コレ！',
+        theme: buildSansuTheme(),
+        debugShowCheckedModeBanner: false,
+        initialRoute: '/',
+        routes: {
+          '/': (context) => const OrgSplashScreen(),
+          '/app-splash': (context) => const SplashScreen(),
+          '/onboarding': (context) => const OnboardingScreen(),
+          '/profile-selection': (context) => const ProfileSelectionScreen(),
+          '/home': (context) => const RootShell(),
+          '/stages': (context) => const StageSelectScreen(),
+          '/characters': (context) => const CharacterScreen(),
+          '/badge-collection': (context) => const BadgeCollectionScreen(),
+          '/ranking': (context) => const RankingFilterScreen(),
+          '/settings': (context) => const SettingsScreen(),
+          '/upgrade': (context) => const UpgradeScreen(),
+          '/privacy': (context) => const PrivacyPolicyScreen(),
+          '/terms': (context) => const PrivacyPolicyScreen(),
+          '/daily-bonus': (context) => const DailyBonusScreen(),
+          '/weekly-challenge': (context) => const WeeklyChallengeScreen(),
+          '/growth': (context) => const GrowthScreen(),
+          '/invite': (context) => const InviteScreen(),
+          '/math-guide': (context) => const MathGuideScreen(),
+          '/analysis': (context) => const AnalysisDashboardScreen(),
+        },
+        onGenerateRoute: (settings) {
+          if (settings.name == '/quest') {
+            final stage = settings.arguments as Stage;
+            return MaterialPageRoute(
+              builder: (_) => QuestScreen(stage: stage),
+              settings: settings,
+            );
+          }
+          if (settings.name == '/result') {
+            final args = settings.arguments as Map<String, dynamic>;
+            return MaterialPageRoute(
+              builder: (_) => ResultScreen(
+                result: args['result'] as QuestResult,
+                stage: args['stage'] as Stage,
+              ),
+              settings: settings,
+            );
+          }
+          if (settings.name == '/infinite-practice') {
+            final topic = settings.arguments as MathTopicType?;
+            return MaterialPageRoute(
+              builder: (_) => InfinitePracticeScreen(initialTopic: topic),
+              settings: settings,
+            );
+          }
+          return null;
+        },
+      ),
     );
   }
 }

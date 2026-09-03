@@ -1,4 +1,5 @@
 import 'package:confetti/confetti.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:share_plus/share_plus.dart';
@@ -161,14 +162,14 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
     final profile = ref.read(profileProvider).currentProfile;
     if (currentUserRanking != null && profile != null) {
       if (rankingBadges['ranking_top10'] == true) {
-        print('🏆 ランキングトップ10達成！');
+        if (kDebugMode) print('🏆 ランキングトップ10達成！');
         await NotificationService.triggerRankingMilestone(
           childName: profile.name,
           rank: currentUserRanking.rank,
           milestone: 'top10',
         );
       } else if (rankingBadges['ranking_top100'] == true) {
-        print('🏆 ランキングトップ100達成！');
+        if (kDebugMode) print('🏆 ランキングトップ100達成！');
         await NotificationService.triggerRankingMilestone(
           childName: profile.name,
           rank: currentUserRanking.rank,
@@ -176,7 +177,7 @@ class _ResultScreenState extends ConsumerState<ResultScreen> {
         );
       }
       if (rankingBadges['weekly_ranking_win'] == true) {
-        print('👑 週間チャンピオン達成！');
+        if (kDebugMode) print('👑 週間チャンピオン達成！');
         await NotificationService.triggerRankingMilestone(
           childName: profile.name,
           rank: 1,

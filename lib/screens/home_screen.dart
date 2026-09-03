@@ -11,14 +11,17 @@ import '../providers/adaptive_provider.dart';
 import '../providers/weekly_challenge_provider.dart';
 import '../providers/retention_notifications_provider.dart';
 import '../providers/daily_challenge_provider.dart';
+import '../providers/ranking_provider.dart';
 import '../models/quest_model.dart';
 import '../models/math_guide_model.dart';
 import '../screens/daily_bonus_screen.dart';
 import '../screens/math_guide_screen.dart';
 import '../screens/math_guide_detail_screen.dart';
+import '../screens/ranking_filter_screen.dart';
 import '../theme/app_theme.dart';
 import '../widgets/daily_challenge_widgets.dart';
 import '../widgets/math_guide_widgets.dart';
+import '../widgets/ranking_filter_widget.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -35,7 +38,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       _checkDailyBonus();
       _checkRetentionNotifications();
       _initializeDailyChallenge();
+      _initializeRanking();
     });
+  }
+
+  void _initializeRanking() {
+    ref.read(rankingProvider.notifier).fetchGlobalRanking();
   }
 
   void _initializeDailyChallenge() {
@@ -210,6 +218,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           // ウィークリーチャレンジカード
           SliverToBoxAdapter(
             child: _WeeklyChallengeCard(),
+          ),
+
+          // ランキングセクション
+          SliverToBoxAdapter(
+            child: _RankingPreviewSection(
+              onViewAll: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => const RankingFilterScreen(),
+                  ),
+                );
+              },
+            ),
           ),
 
           // 算数ガイドセクション
@@ -730,5 +751,222 @@ class _MathGuideSection extends ConsumerWidget {
       default:
         return GradeLevel.grade1;
     }
+  }
+}
+
+/// ランキングプレビューセクション
+class _RankingPreviewSection extends ConsumerWidget {
+  final VoidCallback onViewAll;
+
+  const _RankingPreviewSection({required this.onViewAll});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ranking = ref.watch(rankingProvider);
+    final filteredRankings = ref.watch(filteredRankingProvider);
+
+    if (ranking.isLoading) {
+      return const Padding(
+        padding: EdgeInsets.all(16),
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final topRankings = filteredRankings.take(5).toList();
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Colors.blue.shade50, Colors.blue.shade100],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: Colors.blue.shade300,
+            width: 1.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // ヘッダー
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Row(
+                    children: [
+                      const Text(
+                        '🏆',
+                        style: TextStyle(fontSize: 24),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'ランキング',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.black87,
+                        ),
+                      ),
+                    ],
+                  ),
+                  // 詳細ボタン
+                  TextButton(
+                    onPressed: onViewAll,
+                    child: Text(
+                      '詳細を見る →',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: Colors.blue.shade600,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // トップ5ランキング表示
+            if (topRankings.isEmpty)
+              Padding(
+                padding: const EdgeInsets.all(16),
+                child: Center(
+                  child: Text(
+                    'ランキングデータを読み込み中...',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
+                  ),
+                ),
+              )
+            else
+              ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: topRankings.length,
+                itemBuilder: (context, index) {
+                  final rankingData = topRankings[index];
+                  final position = index + 1;
+                  final medal = _getMedalEmoji(position);
+                  return _buildCompactRankingTile(
+                    position: position,
+                    medal: medal,
+                    name: rankingData.getDisplayName(),
+                    score: rankingData.score,
+                    grade: rankingData.gradeLevel,
+                  );
+                },
+              ),
+
+            // フッター
+            Padding(
+              padding: const EdgeInsets.all(12),
+              child: CompactRankingFilter(showGrades: false, showMonths: false),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String _getMedalEmoji(int position) {
+    switch (position) {
+      case 1:
+        return '🥇';
+      case 2:
+        return '🥈';
+      case 3:
+        return '🥉';
+      default:
+        return '${position}️⃣';
+    }
+  }
+
+  Widget _buildCompactRankingTile({
+    required int position,
+    required String medal,
+    required String name,
+    required int score,
+    required int grade,
+  }) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Row(
+        children: [
+          // メダル
+          Text(
+            medal,
+            style: const TextStyle(fontSize: 20),
+          ),
+          const SizedBox(width: 10),
+
+          // ランク番号
+          SizedBox(
+            width: 30,
+            child: Text(
+              '#$position',
+              style: const TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.black54,
+              ),
+            ),
+          ),
+
+          // ユーザー情報
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.black87,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                Text(
+                  '$grade年生',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
+          // スコア
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: Colors.amber.shade100,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Text(
+              '$score点',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: Colors.amber.shade700,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

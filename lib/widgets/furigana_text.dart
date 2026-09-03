@@ -136,7 +136,7 @@ class FuriganaProcessor {
   /// マークアップを削除してプレーンテキストに変換
   static String removeMarkup(String text) {
     return text
-        .replaceAll(RegExp(r'\{([^|]+)\|([^}]+)\}'), '$1'); // {漢字|ふりがな} → 漢字
+        .replaceAll(RegExp(r'\{([^|]+)\|([^}]+)\}'), r'$1'); // {漢字|ふりがな} → 漢字
   }
 
   /// マークアップが含まれているか判定
