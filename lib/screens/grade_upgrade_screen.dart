@@ -48,7 +48,7 @@ class _GradeUpgradeScreenState extends ConsumerState<GradeUpgradeScreen>
       vsync: this,
     )..repeat(reverse: true);
     _floatAnimation = Tween<double>(begin: -10, end: 10).animate(
-      CurvedAnimation(parent: _floatController, curve: Curves.sine),
+      CurvedAnimation(parent: _floatController, curve: Curves.easeInOutSine),
     );
 
     _scaleController.forward();
