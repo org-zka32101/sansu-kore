@@ -157,3 +157,47 @@ class FuriganaText extends StatelessWidget {
     };
   }
 }
+
+/// ふりがな対応タイトルウィジェット
+class FuriganaTitle extends StatelessWidget {
+  /// 表示するテキスト
+  final String text;
+
+  /// テキストスタイル
+  final TextStyle? style;
+
+  /// ふりがなのスケール（相対サイズ）
+  final double furiganaScale;
+
+  /// 学年
+  final int? grade;
+
+  const FuriganaTitle({
+    Key? key,
+    required this.text,
+    this.style,
+    this.furiganaScale = 0.5,
+    this.grade,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final furiganaMap = grade != null
+        ? FuriganaText.getGradeFurigana(text, grade!)
+        : FuriganaText.allFuriganaMap();
+
+    final baseFontSize = style?.fontSize ?? 16;
+    final rubyFontSize = baseFontSize * furiganaScale;
+
+    return FuriganaText(
+      text,
+      furiganaMap: furiganaMap,
+      style: style,
+      rubyStyle: TextStyle(
+        fontSize: rubyFontSize,
+        color: (style?.color ?? Colors.black87).withOpacity(0.7),
+        fontWeight: FontWeight.normal,
+      ),
+    );
+  }
+}
