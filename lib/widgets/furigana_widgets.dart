@@ -1,284 +1,159 @@
-// Furigana Widgets - Ruby text support for kanji
-// Features: Furigana display, flexible sizing, light/dark theme support
-
 import 'package:flutter/material.dart';
+import '../models/furigana_model.dart';
 
-/// ふりがな付きテキスト
-/// 漢字の上に読み方を表示する
+/// ふりがな対応テキストウィジェット
 class FuriganaText extends StatelessWidget {
-  final String kanji;
-  final String furigana;
-  final TextStyle? kanjiStyle;
-  final TextStyle? furiganaStyle;
+  /// 表示するテキスト
+  final String text;
 
-  const FuriganaText({
+  /// ふりがなマップ
+  final Map<String, String> furiganaMap;
+
+  /// ベーステキストスタイル
+  final TextStyle? style;
+
+  /// ふりがなスタイル
+  final TextStyle? rubyStyle;
+
+  /// 学年（自動的にふりがなを選択）
+  final int? grade;
+
+  /// テキスト配置
+  final TextAlign textAlign;
+
+  /// 最大行数
+  final int? maxLines;
+
+  /// オーバーフロー処理
+  final TextOverflow overflow;
+
+  const FuriganaText(
+    this.text, {
     Key? key,
-    required this.kanji,
-    required this.furigana,
-    this.kanjiStyle,
-    this.furiganaStyle,
+    this.furiganaMap = const {},
+    this.style,
+    this.rubyStyle,
+    this.grade,
+    this.textAlign = TextAlign.left,
+    this.maxLines,
+    this.overflow = TextOverflow.clip,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    final defaultKanjiStyle = kanjiStyle ??
-        const TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        );
+    final baseFontSize = style?.fontSize ?? 16;
+    final rubyFontSize = (baseFontSize ?? 16) * 0.5;
 
-    final defaultFuriganaStyle = furiganaStyle ??
-        TextStyle(
-          fontSize: defaultKanjiStyle.fontSize! * 0.5,
-          fontWeight: FontWeight.w500,
-          color: Colors.grey.shade700,
-          height: 0.8,
-        );
+    final displayFuriganaMap = grade != null
+        ? FuriganaText.getGradeFurigana(text, grade!)
+        : furiganaMap;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // ふりがな（上）
-        Text(
-          furigana,
-          style: defaultFuriganaStyle,
-          textAlign: TextAlign.center,
-        ),
-        // 漢字（下）
-        Text(
-          kanji,
-          style: defaultKanjiStyle,
-          textAlign: TextAlign.center,
-        ),
-      ],
+    final textSpans = _buildTextSpans(
+      text,
+      displayFuriganaMap,
+      style,
+      rubyStyle?.copyWith(fontSize: rubyFontSize) ??
+          TextStyle(
+            fontSize: rubyFontSize,
+            color: (style?.color ?? Colors.black87).withOpacity(0.7),
+            fontWeight: FontWeight.normal,
+          ),
     );
-  }
-}
-
-/// ふりがな対応のテキスト（インライン）
-/// 文中に埋め込める柔軟なふりがな表示
-class RichFuriganaText extends StatelessWidget {
-  final List<FuriganaSegment> segments;
-  final TextStyle? baseStyle;
-  final double furiganaScale;
-
-  const RichFuriganaText({
-    Key? key,
-    required this.segments,
-    this.baseStyle,
-    this.furiganaScale = 0.5,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final base = baseStyle ??
-        const TextStyle(
-          fontSize: 16,
-          color: Colors.black87,
-        );
 
     return RichText(
-      text: TextSpan(
-        style: base,
-        children: segments.map((segment) {
-          if (segment.furigana == null || segment.furigana!.isEmpty) {
-            // ふりがんがない場合は通常テキスト
-            return TextSpan(
-              text: segment.text,
-              style: base,
-            );
-          } else {
-            // ふりがな付きテキスト
-            return WidgetSpan(
-              alignment: PlaceholderAlignment.middle,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    segment.furigana!,
-                    style: TextStyle(
-                      fontSize: (base.fontSize ?? 16) * furiganaScale,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.grey.shade700,
-                      height: 0.8,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  Text(
-                    segment.text,
-                    style: base,
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ),
-            );
-          }
-        }).toList(),
-      ),
+      text: TextSpan(children: textSpans),
+      textAlign: textAlign,
+      maxLines: maxLines,
+      overflow: overflow,
     );
   }
-}
 
-/// ふりがなセグメント
-class FuriganaSegment {
-  final String text;
-  final String? furigana;
+  /// テキストスパンをビルド
+  List<InlineSpan> _buildTextSpans(
+    String text,
+    Map<String, String> furiganaMap,
+    TextStyle? baseStyle,
+    TextStyle rubyStyle,
+  ) {
+    final spans = <InlineSpan>[];
+    var i = 0;
 
-  FuriganaSegment({
-    required this.text,
-    this.furigana,
-  });
-}
+    while (i < text.length) {
+      final char = text[i];
 
-/// 簡単なふりがん表記（括弧形式）
-/// 「漢字(かんじ)」形式を解析して表示
-class SimpleFuriganaParser {
-  /// 「漢字(かんじ)」形式のテキストをパース
-  static List<FuriganaSegment> parse(String text) {
-    final segments = <FuriganaSegment>[];
-    final regex = RegExp(r'([^\(]+)\(([^\)]+)\)');
-    final namedGroupsRegex = RegExp(r'(.+?)\((.+?)\)');
-
-    int lastEnd = 0;
-    for (final match in namedGroupsRegex.allMatches(text)) {
-      // マッチ前のテキスト
-      if (match.start > lastEnd) {
-        segments.add(FuriganaSegment(
-          text: text.substring(lastEnd, match.start),
-          furigana: null,
-        ));
+      if (furiganaMap.containsKey(char)) {
+        // ふりがながある場合
+        spans.add(
+          WidgetSpan(
+            alignment: PlaceholderAlignment.middle,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  furiganaMap[char]!,
+                  style: rubyStyle,
+                  textAlign: TextAlign.center,
+                ),
+                Text(
+                  char,
+                  style: baseStyle,
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        // ふりがながない場合
+        spans.add(
+          TextSpan(
+            text: char,
+            style: baseStyle,
+          ),
+        );
       }
 
-      // マッチしたテキスト
-      final kanji = match.group(1) ?? '';
-      final furigana = match.group(2) ?? '';
-      segments.add(FuriganaSegment(
-        text: kanji,
-        furigana: furigana,
-      ));
-
-      lastEnd = match.end;
+      i++;
     }
 
-    // 最後の残りのテキスト
-    if (lastEnd < text.length) {
-      segments.add(FuriganaSegment(
-        text: text.substring(lastEnd),
-        furigana: null,
-      ));
+    return spans;
+  }
+
+  /// 学年に応じたふりがなマップを取得
+  static Map<String, String> getGradeFurigana(String text, int grade) {
+    final allMap = FuriganaText.allFuriganaMap();
+
+    if (grade <= 1) {
+      // 1年生: 基本漢字のみ
+      return {
+        for (final entry in allMap.entries)
+          if (['数', '字', '年', '生'].contains(entry.key)) entry.key: entry.value
+      };
+    } else if (grade <= 3) {
+      // 2-3年生: 中程度の難度
+      return allMap;
+    } else {
+      // 4年生以上: 難しい漢字のみ
+      return {
+        for (final entry in allMap.entries)
+          if (['難', '複', '確', '率', '標', '習'].contains(entry.key))
+            entry.key: entry.value
+      };
     }
-
-    return segments.isEmpty
-        ? [FuriganaSegment(text: text, furigana: null)]
-        : segments;
   }
-}
 
-/// ふりがん対応のタイトルウィジェット
-class FuriganaTitle extends StatelessWidget {
-  final String text;
-  final TextStyle? style;
-  final double furiganaScale;
-
-  const FuriganaTitle({
-    Key? key,
-    required this.text,
-    this.style,
-    this.furiganaScale = 0.5,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final titleStyle = style ??
-        const TextStyle(
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
-          color: Colors.black87,
-        );
-
-    final segments = SimpleFuriganaParser.parse(text);
-
-    return RichFuriganaText(
-      segments: segments,
-      baseStyle: titleStyle,
-      furiganaScale: furiganaScale,
-    );
-  }
-}
-
-/// ふりがん対応のボディテキストウィジェット
-class FuriganaBody extends StatelessWidget {
-  final String text;
-  final TextStyle? style;
-  final double furiganaScale;
-  final int? maxLines;
-  final TextOverflow? overflow;
-
-  const FuriganaBody({
-    Key? key,
-    required this.text,
-    this.style,
-    this.furiganaScale = 0.5,
-    this.maxLines,
-    this.overflow,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final bodyStyle = style ??
-        const TextStyle(
-          fontSize: 14,
-          color: Colors.black87,
-          height: 1.6,
-        );
-
-    final segments = SimpleFuriganaParser.parse(text);
-
-    return RichFuriganaText(
-      segments: segments,
-      baseStyle: bodyStyle,
-      furiganaScale: furiganaScale,
-    );
-  }
-}
-
-/// ステップタイトル用ふりがんウィジェット
-class FuriganaStepTitle extends StatelessWidget {
-  final String text;
-  final int stepNumber;
-
-  const FuriganaStepTitle({
-    Key? key,
-    required this.text,
-    required this.stepNumber,
-  }) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    final segments = SimpleFuriganaParser.parse(text);
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        color: Colors.blue.shade100,
-        borderRadius: BorderRadius.circular(6),
-      ),
-      child: RichFuriganaText(
-        segments: [
-          FuriganaSegment(
-            text: 'ステップ $stepNumber: ',
-            furigana: null,
-          ),
-          ...segments,
-        ],
-        baseStyle: TextStyle(
-          fontSize: 16,
-          fontWeight: FontWeight.bold,
-          color: Colors.blue.shade700,
-        ),
-        furiganaScale: 0.5,
-      ),
-    );
+  /// 全ふりがなマップ
+  static Map<String, String> allFuriganaMap() {
+    return {
+      '数': 'かず', '字': 'じ', '式': 'しき', '計': 'けい', '算': 'さん',
+      '足': 'たし', '引': 'ひ', '掛': 'か', '割': 'わ', '分': 'ぶん',
+      '年': 'ねん', '生': 'せい', '級': 'きゅう', '段': 'だん',
+      '問': 'もん', '題': 'だい', '答': 'こたえ', '例': 'れい', '図': 'ず',
+      '形': 'かたち', '角': 'かく', '辺': 'へん', '面': 'めん', '積': 'せき',
+      '率': 'りつ', '確': 'かく', '複': 'ふく', '応': 'おう', '用': 'よう',
+      '時': 'とき', '間': 'かん', '得': 'とく', '点': 'てん', '目': 'もく',
+      '標': 'ひょう', '記': 'き', '録': 'ろく', '難': 'なん', '度': 'ど',
+      '易': 'い', '学': 'がく', '習': 'しゅう',
+    };
   }
 }
