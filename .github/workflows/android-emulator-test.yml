@@ -1,0 +1,103 @@
+name: Android Emulator Tests
+
+on:
+  workflow_call:
+    inputs:
+      flutter_version:
+        description: 'Flutter version to use'
+        required: false
+        default: '3.11.5'
+        type: string
+      api_level:
+        description: 'Android API level for emulator'
+        required: false
+        default: '31'
+        type: string
+      arch:
+        description: 'CPU architecture for emulator'
+        required: false
+        default: 'x86_64'
+        type: string
+
+env:
+  JAVA_VERSION: '17'
+
+jobs:
+  android-emulator-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: ${{ env.JAVA_VERSION }}
+          cache: 'gradle'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ inputs.flutter_version }}
+          channel: 'stable'
+
+      - name: Cache Flutter dependencies
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.flutter
+            ~/.pub-cache
+          key: flutter-${{ inputs.flutter_version }}-${{ runner.os }}
+          restore-keys: flutter-${{ inputs.flutter_version }}-
+
+      - name: Verify Flutter setup
+        run: |
+          flutter --version
+          flutter doctor -v
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Enable Android emulator
+        run: |
+          echo "::group::Setting up Android emulator"
+          chmod +x scripts/setup-android-emulator.sh
+          bash scripts/setup-android-emulator.sh \
+            --api-level ${{ inputs.api_level }} \
+            --arch ${{ inputs.arch }}
+          echo "::endgroup::"
+
+      - name: Run Flutter tests
+        run: |
+          echo "::group::Running Flutter tests on emulator"
+          flutter test integration_test/ --verbose
+          echo "::endgroup::"
+
+      - name: Run integration tests on emulator
+        run: |
+          echo "::group::Running integration tests"
+          flutter drive \
+            --driver=test_driver/integration_test_driver.dart \
+            --target=integration_test/app_test.dart
+          echo "::endgroup::"
+        continue-on-error: true
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: emulator-test-results
+          path: |
+            build/
+            coverage/
+          if-no-files-found: ignore
+
+      - name: Report test status
+        if: always()
+        run: |
+          echo "Test execution completed"
+          echo "API Level: ${{ inputs.api_level }}"
+          echo "Architecture: ${{ inputs.arch }}"
